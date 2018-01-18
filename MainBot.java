@@ -14,34 +14,25 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 public class MainBot extends ListenerAdapter 
 {
 	public static JDA epi;
-	Command command = new Command(); 
-	Blacklist words = new Blacklist();
-	String line;
+	static Command command = new Command(); 
 		
 	public static void main (String [] args) 
 			throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException
 	{
 			epi = new JDABuilder(AccountType.BOT).setToken(Ref.Token).buildBlocking();
-			epi.getPresence().setGame(Game.listening("With some yarn"));
+			epi.getPresence().setGame(Game.playing("with an outlet"));
 			epi.addEventListener(new MainBot());
+			command.makeTriggers(epi.getGuilds());
 	}
 	
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 	{
-		line = event.getMessage().getContentRaw();
-		if(words.check(line))
-		{
-			event.getMessage().delete().queue();
-			event.getChannel().sendMessage("Message deleted for inappropiate language.").queue();
-			return;
-		}
-		
 		//Ignores herself
 		if(event.getAuthor().getName().equals("KittyBot") || event.getMessage().getContentRaw().length() < 1)
 			return;
 		
-		String message = command.comSent(event.getMessage(), event.getMember());
+		String message = command.comSent(event.getMessage(), event.getMember(), Ref.CliID);
 		if(!message.equals(""))
 		{
 			event.getChannel().sendMessage(message).queue();

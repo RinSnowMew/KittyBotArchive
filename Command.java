@@ -3,26 +3,38 @@ package main.java.net.dv8tion;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 
 public class Command 
 {
-	RPManager manager = new RPManager();
 	ArrayList <String> mute = new ArrayList <String>(); 
-	boolean logging = false; 
+	ArrayList <String> listed = new ArrayList <String>();
+	HashMap <String, String> triggers = new HashMap<String, String>();
+	RPManager manager = new RPManager();
 	PointCounter points = new PointCounter();
 	IgnoreList ignored = new IgnoreList();
 	AuthList authed = new AuthList();
+	Blacklist words = new Blacklist();
+	PollManager polls = new PollManager();
 	
-	public String comSent(Message message, Member member)
+	public String comSent(Message message, Member member, String cliid)
 	{
 		String line = message.getContentRaw();
+		if(words.check(line) && listed.contains(message.getGuild().getId()))
+		{
+			message.delete().queue();
+			return "Message deleted for inappropiate language.";
+		}
 		if(!isIgnore(member, message.getGuild().getId()))
 		{
 			points.addPoints(message.getAuthor().getId(), message.getGuild().getId(), 1);
 		}
+		
 		if((line.charAt(0) == '_' && line.charAt(line.length()-1) == '_') 
 				||(line.charAt(0) == '*' && line.charAt(line.length()-1) == '*'))
 		{
@@ -32,39 +44,63 @@ public class Command
 		
 		String [] command = message.getContentRaw().split(" ");
 		
-		if(!command[0].startsWith("!"))
+		if(!(command[0].startsWith(triggers.get(message.getGuild().getId()))))
 		{
 			return "";
 		}
+		command[0] = command[0].substring(triggers.get(message.getGuild().getId()).length());
+		
 		
 		//Start of Dev command
-		if(command[0].equals("!save") && message.getAuthor().getName().equals("RinTheSnowMew"))
+		if(message.getAuthor().getName().equals("RinTheSnowMew"))
 		{
-			try {
-				points.writeToFile();
-				ignored.writeToFile();
-				return "Saved successfully!";
-				
-			} catch (FileNotFoundException e) 
+			if(command[0].equals("save"))
 			{
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) 
+				try {
+					points.writeToFile();
+					ignored.writeToFile();
+					authed.writeToFile();
+					return "Saved successfully!";
+					
+				} catch (FileNotFoundException e) 
+				{
+				} catch (UnsupportedEncodingException e) 
+				{
+				}
+			}
+			
+			if(command[0].equalsIgnoreCase("invitelink"))
 			{
-				e.printStackTrace();
+				return "https://discordapp.com/oauth2/authorize?&client_id=" + cliid + "&scope=bot&permissions=0";
 			}
 		}
+		
 		
 		//Start of Mod commands
 		if(isAuth(member,message.getGuild().getId()) 
 				|| message.getAuthor().getName().equals("RinTheSnowMew"))
 		{
+			//Opts in and out of Blacklist
+			if(command[0].equalsIgnoreCase("stopList"))
+			{
+				listed.remove(message.getGuild().getId());
+				return "Blacklist disabled"; 
+			}
+			
+			if(command[0].equalsIgnoreCase("startList"))
+			{
+				listed.add(message.getGuild().getId());
+				return "Blacklist enabled";
+			}
+			
+			
 			//Mutes and unmutes bot
-			if(command[0].equals("!mute"))
+			if(command[0].equalsIgnoreCase("mute"))
 			{
 				mute.add(message.getGuild().getId());
 				return "Being quiet now.";
 			}
-			if(command[0].equals("!unmute"))
+			if(command[0].equalsIgnoreCase("unmute"))
 			{
 				if(mute.contains(message.getGuild().getId()))
 				{
@@ -74,7 +110,7 @@ public class Command
 			}
 			
 			//Adds points to user
-			if(command[0].equalsIgnoreCase("!addpoints"))
+			if(command[0].equalsIgnoreCase("addpoints"))
 			{
 				points.addPoints(message.getMentionedUsers().get(0).getId(),
 						message.getGuild().getId(), Integer.parseInt(command[2]));
@@ -82,7 +118,7 @@ public class Command
 			}
 			
 			//Removes points from user
-			if(command[0].equalsIgnoreCase("!removepoints"))
+			if(command[0].equalsIgnoreCase("removepoints"))
 			{
 				points.subPoints(message.getMentionedUsers().get(0).getId(),
 						message.getGuild().getId(), Integer.parseInt(command[2]));
@@ -90,7 +126,7 @@ public class Command
 			}
 			
 			//Ignore & un-ignore separate users
-			if(command[0].equalsIgnoreCase("!ignore"))
+			if(command[0].equalsIgnoreCase("ignore"))
 			{
 				if(message.getMentionedUsers().isEmpty())
 				{
@@ -99,7 +135,7 @@ public class Command
 				ignored.addName(message.getMentionedUsers().get(0).getId(), message.getGuild().getId()); 
 				return "Ignored " + message.getMentionedUsers().get(0).getName();
 			}
-			if(command[0].equalsIgnoreCase("!unignore"))
+			if(command[0].equalsIgnoreCase("unignore"))
 			{
 				if(message.getMentionedUsers().isEmpty())
 				{
@@ -110,7 +146,7 @@ public class Command
 			}
 			
 			//Ignore & un-ignore separate roles
-			if(command[0].equalsIgnoreCase("!ignorerole"))
+			if(command[0].equalsIgnoreCase("ignorerole"))
 			{
 				if(message.getMentionedRoles().isEmpty())
 				{
@@ -119,7 +155,7 @@ public class Command
 				ignored.addRole(message.getMentionedRoles().get(0).getId(), message.getGuild().getId()); 
 				return "Ignored " + message.getMentionedRoles().get(0).getName();
 			}
-			if(command[0].equalsIgnoreCase("!unignorerole"))
+			if(command[0].equalsIgnoreCase("unignorerole"))
 			{
 				if(message.getMentionedRoles().isEmpty())
 				{
@@ -130,7 +166,7 @@ public class Command
 			}
 			
 			//Authorize users
-			if(command[0].equalsIgnoreCase("!auth"))
+			if(command[0].equalsIgnoreCase("auth"))
 			{
 				if(message.getMentionedUsers().isEmpty())
 				{
@@ -139,7 +175,7 @@ public class Command
 				authed.addName(message.getMentionedUsers().get(0).getId(), message.getGuild().getId()); 
 				return "Authorized " + message.getMentionedUsers().get(0).getName();
 			}
-			if(command[0].equalsIgnoreCase("!deauth"))
+			if(command[0].equalsIgnoreCase("deauth"))
 			{
 				if(message.getMentionedUsers().isEmpty())
 				{
@@ -150,7 +186,7 @@ public class Command
 			}
 			
 			//Authorize and de-auth separate roles
-			if(command[0].equalsIgnoreCase("!authrole"))
+			if(command[0].equalsIgnoreCase("authrole"))
 			{
 				if(message.getMentionedRoles().isEmpty())
 				{
@@ -159,7 +195,7 @@ public class Command
 				authed.addRole(message.getMentionedRoles().get(0).getId(), message.getGuild().getId()); 
 				return "Authorized " + message.getMentionedRoles().get(0).getName();
 			}
-			if(command[0].equalsIgnoreCase("!deauthrole"))
+			if(command[0].equalsIgnoreCase("deauthrole"))
 			{
 				if(message.getMentionedRoles().isEmpty())
 				{
@@ -169,7 +205,34 @@ public class Command
 				return "Deauthorized " + message.getMentionedRoles().get(0).getName();
 			}
 			
+			if(command[0].equalsIgnoreCase("changeTrigger"))
+			{
+				if(command.length < 2)
+				{
+					return "No trigger given.";
+				}
+				
+				changeTrigger(message.getGuild().getId(), command[1]);
+				return "Trigger changed to: " + command[1];
+			}
 			
+			//Polling start and end 
+			if(command[0].equalsIgnoreCase("startPoll"))
+			{
+				line = message.getContentRaw().substring(11);
+				polls.newPoll(message.getGuild().getId(), line);
+				return "New question added! Don't forget to add choices!";
+			}
+			
+			if(command[0].equalsIgnoreCase("endPoll"))
+			{
+				return polls.endPoll(message.getGuild().getId());
+			}
+			
+			if(command[0].equalsIgnoreCase("addchoice"))
+			{
+				return polls.addChoice(message.getGuild().getId(), message.getContentRaw().substring(11));
+			}
 		}
 		
 		//Start of non-mod commands
@@ -178,7 +241,7 @@ public class Command
 			return "";
 		}
 		//Help
-		if(command[0].equalsIgnoreCase("!help"))
+		if(command[0].equalsIgnoreCase("help"))
 		{
 			return "Hi! My name is KittyBot! I can do lots of things! "
 					+ "\nIf you !boop I'll boop you right back!"
@@ -189,48 +252,54 @@ public class Command
 					+ "\nAnd if you want me to keep track of your RP you can !rpstart just don't forget to !rpend";
 		} 
 		
-		if(command[0].equalsIgnoreCase("!info"))
+		if(command[0].equalsIgnoreCase("info"))
 		{
-			return "Developed by Rin. \nRepository is https://github.com/omnicons/ye-olde-botte";
+			return "Developed by Rin. \nRepository is <https://github.com/RinSnowMew/KittyBot> "
+					+ "\nIcon by the very talented Meep\nhttp://www.furaffinity.net/view/25966081/"
+					+ "\nhttp://d.facdn.net/art/meep/1515216535/1515216535.meep_kittybot.png";
 		}
-		if(command[0].equals("!boop"))
+		if(command[0].equalsIgnoreCase("boop"))
 		{
-			return "*Boops " +message.getAuthor().getAsMention() + " right back!*";
+			if(message.getMentionedUsers().isEmpty())
+			{
+				return "*Boops " +message.getAuthor().getAsMention() + " right back!*";
+			}
+			return "*Boops " + message.getMentionedUsers().get(0).getAsMention() + " everywhere!*";
 		}
 		
 		//Method call and response 
 		
-		if(command[0].equalsIgnoreCase("!roll"))
+		if(command[0].equalsIgnoreCase("roll"))
 		{
 			return rollDice(command);
 		}
 		
-		if(command[0].equalsIgnoreCase("!choose"))
+		if(command[0].equalsIgnoreCase("choose"))
 		{
 			return choose(message.getContentRaw());
 		}
 		
-		if(command[0].equalsIgnoreCase("!points"))
+		if(command[0].equalsIgnoreCase("points"))
 		{
 			if(message.getGuild().getName().equalsIgnoreCase("meeples peeples"))
 			{
-				return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " :beens:!";
+				return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!";
 			}
 			return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " beans!";
 		}
 		
-		if(command[0].equalsIgnoreCase("!bet"))
+		if(command[0].equalsIgnoreCase("bet"))
 		{
 			return points.betStart(message.getAuthor().getId(),message.getGuild().getId());
 		}
 		
-		if(command[0].equalsIgnoreCase("!rpstart"))
+		if(command[0].equalsIgnoreCase("rpstart"))
 		{
 			manager.newRP(message.getChannel().getId());
 			return "RP Started";
 		}
 		
-		if(command[0].equalsIgnoreCase("!rpend"))
+		if(command[0].equalsIgnoreCase("rpend"))
 		{
 			if(command.length == 1)
 			{
@@ -244,7 +313,29 @@ public class Command
 			}
 		}
 		
-		return "I dun know how to respond so have a :fish:"; 
+		if(command[0].equalsIgnoreCase("vote"))
+		{
+			if(isInteger(command[1]))
+			{
+				return polls.newVote(message.getGuild().getId(), message.getAuthor().getId(), Integer.parseInt(command[1]));
+			}
+			return "Please enter a real number choice"; 
+		}
+		
+		if(command[0].equalsIgnoreCase("getPoll"))
+		{
+			return polls.getQuestion(message.getGuild().getId());
+		}
+		
+		if(command[0].equalsIgnoreCase("getResults"))
+		{
+			return polls.getResults(message.getGuild().getId());
+		}
+		
+		System.out.println("Problem with message: " + message.getContentRaw());
+		
+		return "";
+//		return "I dun know how to respond so have a :fish:"; 
 	}
 	
 	
@@ -269,7 +360,7 @@ public class Command
 		return false; 
 	}
 	
-	public String choose(String line)
+	private String choose(String line)
 	{
 		line = line.substring(7);
 		String [] choices = line.split(",");
@@ -282,7 +373,7 @@ public class Command
 	}
 	
 	
-	public String rollDice(String [] command)
+	private String rollDice(String [] command)
 	{
 		int numofdice = 0;
 		int dicesize = 0;
@@ -314,7 +405,7 @@ public class Command
 	/*
 	 * checks if String is Int if not returns false 
 	 */
-	public static boolean isInteger(String str) 
+	private static boolean isInteger(String str) 
 	{
 	    if (str == "") 
 	    {
@@ -340,5 +431,18 @@ public class Command
 	        }
 	    }
 	    return true;
+	}
+	
+	public void makeTriggers(List <Guild> servers)
+	{
+		for(int i = 0; i < servers.size(); i++)
+		{
+			triggers.put(servers.get(i).getId(), "!");
+		}
+	}
+	
+	private void changeTrigger(String ID, String trig)
+	{
+		triggers.put(ID, trig);
 	}
 }
