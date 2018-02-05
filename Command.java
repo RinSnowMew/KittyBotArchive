@@ -42,7 +42,7 @@ public class Command
 		}
 		manager.addLine(message.getChannel().getId(), message.getAuthor().getName() + " " + line);
 		
-		String [] command = message.getContentRaw().split(" ");
+		String [] command = message.getContentRaw().split(" |\n|\t");
 		
 		if(!(command[0].startsWith(triggers.get(message.getGuild().getId()))))
 		{
@@ -52,7 +52,7 @@ public class Command
 		
 		
 		//Start of Dev command
-		if(message.getAuthor().getName().equals("RinTheSnowMew"))
+		if(message.getAuthor().getId().equals("147407528874082304"))
 		{
 			if(command[0].equals("save"))
 			{
@@ -244,12 +244,12 @@ public class Command
 		if(command[0].equalsIgnoreCase("help"))
 		{
 			return "Hi! My name is KittyBot! I can do lots of things! "
-					+ "\nIf you !boop I'll boop you right back!"
-					+ "\nIf you !roll I'll need a dice like this 1d4 or 10d7"
-					+ "\nTo see your current amount of beans just !points"
-					+ "\nAnd if you wanna bet 100 beans for a chance for more you can always !bet"
-					+ "\nIf you give me some stuff to !choose from just remember to put commas in between"
-					+ "\nAnd if you want me to keep track of your RP you can !rpstart just don't forget to !rpend";
+					+ "\nIf you " + triggers.get(message.getGuild().getId()) + "boop I'll boop you right back!"
+					+ "\nIf you " + triggers.get(message.getGuild().getId()) + "roll I'll need a dice like this 1d4 or 10d7"
+					+ "\nTo see your current amount of beans just " + triggers.get(message.getGuild().getId()) + "points"
+					+ "\nAnd if you wanna bet 100 beans for a chance for more you can always " + triggers.get(message.getGuild().getId()) + "bet"
+					+ "\nIf you give me some stuff to " + triggers.get(message.getGuild().getId()) + "choose from just remember to put commas in between"
+					+ "\nAnd if you want me to keep track of your RP you can " + triggers.get(message.getGuild().getId()) + "rpstart just don't forget to " + triggers.get(message.getGuild().getId()) + "rpend";
 		} 
 		
 		if(command[0].equalsIgnoreCase("info"))

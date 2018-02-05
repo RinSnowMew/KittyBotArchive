@@ -19,7 +19,7 @@ public class MainBot extends ListenerAdapter
 	public static void main (String [] args) 
 			throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException
 	{
-			epi = new JDABuilder(AccountType.BOT).setToken(Ref.Token).buildBlocking();
+			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
 			epi.getPresence().setGame(Game.playing("with an outlet"));
 			epi.addEventListener(new MainBot());
 			command.makeTriggers(epi.getGuilds());
@@ -32,7 +32,7 @@ public class MainBot extends ListenerAdapter
 		if(event.getAuthor().getName().equals("KittyBot") || event.getMessage().getContentRaw().length() < 1)
 			return;
 		
-		String message = command.comSent(event.getMessage(), event.getMember(), Ref.CliID);
+		String message = command.comSent(event.getMessage(), event.getMember(), Ref.TestCliID);
 		if(!message.equals(""))
 		{
 			event.getChannel().sendMessage(message).queue();
@@ -42,7 +42,6 @@ public class MainBot extends ListenerAdapter
 	/*
 	 * (non-Javadoc)
 	 * @see net.dv8tion.jda.core.hooks.ListenerAdapter#onPrivateMessageReceived(net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent)
-	 * Sees private message and repeats it to them, documents message and author in console
 	 */
 	@Override
 	public void onPrivateMessageReceived(PrivateMessageReceivedEvent event)

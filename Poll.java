@@ -56,7 +56,7 @@ public class Poll
 		for(int i = 1; i <= choices.size(); i++)
 		{
 			res += votes.get(i) + " people voted for " + choices.get(i-1) + " which is " + 
-		(int)(votes.get(i)/totalVotes * 100) + "% of the vote.\n";
+		(int)(((double)votes.get(i)) / ((double)totalVotes) * 100) + "% of the vote.\n";
 		}
 		return res;
 	}
