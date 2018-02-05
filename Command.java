@@ -42,7 +42,7 @@ public class Command
 		}
 		manager.addLine(message.getChannel().getId(), message.getAuthor().getName() + " " + line);
 		
-		String [] command = message.getContentRaw().split(" ");
+		String [] command = message.getContentRaw().split(" |\n|\t");
 		
 		if(!(command[0].startsWith(triggers.get(message.getGuild().getId()))))
 		{
