@@ -15,8 +15,17 @@ public class ColiruReq
 	// Ofc
 	public static Response compileMessageCPP(String msg)
 	{
+		// Escape characters that need escaping
+		msg = msg.replace("\\n", "\\\n");
+		msg = msg.replace("\n", "\\n");
+		msg = msg.replace("\"", "\\\"");
+		msg = msg.replace("\t", " ");
+		
+		// Send the compilation request!
 		Response res = HTTPUtils.SendPOSTRequest("http://coliru.stacked-crooked.com/compile"
 				, "{ \"cmd\": \"g++ main.cpp && ./a.out\", \"src\": \"" + msg + "\" }");
+		
+		System.out.println(res.getContent());
 		
 		return res;
 	}
