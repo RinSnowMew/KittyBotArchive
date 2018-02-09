@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.wolfram.alpha.WAException;
-
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -67,7 +65,7 @@ public class Command
 		// testing purposes.
 		if(isAuth(member, msg_id) 
 		|| message.getAuthor().getId().equals("147407528874082304")
-		|| message.getAuthor().getName().equals("145720924325412865"))
+		|| message.getAuthor().getId().equals("145720924325412865"))
 		{
 			Response res = ProcessCommandsMod(message, member, cliid, command);
 			if(res.isValid())
@@ -87,7 +85,7 @@ public class Command
                 
 		// If we're here, there was an issue.
 		System.out.println("Problem with message: " + message.getContentRaw());
-		return ""; // return "I dun know how to respond so have a :fish:"; 
+		return "";
 	}
 	
 	
@@ -135,8 +133,8 @@ public class Command
 	// Developer only commands. Used mostly for testing.
 	Response ProcessCommandsDev(Message message, Member member, String cliid, String[] command)
 	{
-		final String line = CleanLine(message.getContentRaw());
-        final String msg_id = message.getGuild().getId();
+//		final String line = CleanLine(message.getContentRaw());
+//      final String msg_id = message.getGuild().getId();
 		
 		if(command[0].equals("save"))
 		{
@@ -186,8 +184,7 @@ public class Command
         {
 			return new Response("Developed by Rin. \nRepository is <https://github.com/RinSnowMew/KittyBot> "
 							+ "\nIcon by the very talented Meep\nhttp://www.furaffinity.net/view/25966081/"
-							+ "\nhttp://d.facdn.net/art/meep/1515216535/1515216535.meep_kittybot.png"
-			);
+							+ "\nhttp://d.facdn.net/art/meep/1515216535/1515216535.meep_kittybot.png");
         }
         if(command[0].equalsIgnoreCase("boop"))
         {
@@ -275,14 +272,7 @@ public class Command
 
         if(command[0].equalsIgnoreCase("wolfram"))
         {
-			try 
-			{
-				return new Response(request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
-			} 
-			catch (WAException e) 
-			{
-				System.out.println("Wolfram Error");
-			}
+        	return (request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
 		}
 		
 		// No response.
@@ -293,7 +283,7 @@ public class Command
     // These commands can only be called by a moderator.
     Response ProcessCommandsMod(Message message, Member member, String cliid, String[] command)
     {
-        final String line = CleanLine(message.getContentRaw());
+        //final String line = CleanLine(message.getContentRaw());
         final String msg_id = message.getGuild().getId();
 
 

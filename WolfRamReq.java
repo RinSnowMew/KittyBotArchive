@@ -1,61 +1,27 @@
 package main.java.net.dv8tion;
 
-import com.wolfram.alpha.WAEngine;
-import com.wolfram.alpha.WAException;
-import com.wolfram.alpha.WAPlainText;
-import com.wolfram.alpha.WAPod;
-import com.wolfram.alpha.WAQuery;
-import com.wolfram.alpha.WAQueryResult;
-import com.wolfram.alpha.WASubpod;
-
 public class WolfRamReq 
 {
-	WAEngine engine = new WAEngine();
-	WAQuery query = engine.createQuery();
-	WAQueryResult result;
+	Response answer = new Response();
 	
 	public WolfRamReq()
 	{
-		engine.setAppID(Ref.wolfRamID);
-		engine.addFormat("plaintext");
+		
 	}
 	
-	public String askWRA(String input) throws WAException
+	public Response askWRA(String input) 
 	{
-		query.setInput(input);
-		result = engine.performQuery(query);
-		String answer = "```"; 
+		input = input.trim();
+		input = input.replace("+", "%2B");
+		System.out.println("appid=" +Ref.wolfRamID + "&i=" + input);
+		answer = HTTPUtils.SendPOSTRequest("http://api.wolframalpha.com/v1/result", "appid=" +Ref.wolfRamID + "&i=" + input);
+		System.out.println(answer.getContent()
+				);
 		
-		if(result.isError())
+		if(answer.getContent().equalsIgnoreCase("No short answer available"))
 		{
-			return "Ahh I can't find that! Wolfram said " + result.getErrorMessage(); 
+			return new Response("Kitty can't find that ;3;");
 		}
-		else 
-		{
-			if(!result.isSuccess())
-			{
-				return "Wolfram didn't understand that ;3;";
-			}
-		}
-		
-		for(WAPod pod : result.getPods())
-		{
-			if(!pod.isError())
-			{
-				for(WASubpod subpod : pod.getSubpods())
-				{
-					for(Object element : subpod.getContents())
-					{
-						if(element instanceof WAPlainText && answer.length() < 50)
-						{
-							answer += pod.getTitle() + "\n";
-							answer += ((WAPlainText)element).getText() + "\n";
-						}
-					}
-				}
-			}
-		}
-		
-		return answer+"```"; 
+		return answer;
 	}
 }

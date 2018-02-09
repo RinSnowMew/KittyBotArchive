@@ -8,7 +8,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.dv8tion.jda.core.entities.Role;
 
@@ -88,10 +91,25 @@ public class AuthList
 	public void writeToFile() throws FileNotFoundException, UnsupportedEncodingException
 	{
 		PrintWriter writer = new PrintWriter("AuthNames.txt", "UTF-8");
-		for(int i = 0; i < names.size(); i ++)
+		Set<?> set = names.entrySet(); 
+		Iterator<?> iterator = set.iterator();
+		while(iterator.hasNext()) 
 		{
-			writer.println(names.get(i));
-		}
+	         @SuppressWarnings("rawtypes")
+			Map.Entry mentry = (Map.Entry)iterator.next();
+	        writer.println(mentry.getKey() + " " + mentry.getValue());
+	    }
+		writer.close();
+		
+		writer = new PrintWriter("AuthRoles.txt", "UTF-8");
+		Set<?> set2 = roles.entrySet(); 
+		iterator = set2.iterator();
+		while(iterator.hasNext()) 
+		{
+	         @SuppressWarnings("rawtypes")
+			Map.Entry mentry = (Map.Entry)iterator.next();
+	        writer.println(mentry.getKey() + " " + mentry.getValue());
+	    }
 		writer.close();
 	}
 }
