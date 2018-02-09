@@ -39,7 +39,7 @@ public class Poll
 		{
 			return "You already voted for: " + choices.get(pVote.get(ID)-1);
 		}
-		if(vote > choices.size())
+		if(vote > choices.size() || vote < 1)
 		{
 			return "That is not a choice"; 
 		}

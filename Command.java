@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.wolfram.alpha.WAException;
+
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -21,6 +23,7 @@ public class Command
 	AuthList authed = new AuthList();
 	Blacklist words = new Blacklist();
 	PollManager polls = new PollManager();
+	WolfRamReq request = new WolfRamReq(); 
 	
 	public String comSent(Message message, Member member, String cliid)
 	{
@@ -283,9 +286,17 @@ public class Command
 		{
 			if(message.getGuild().getName().equalsIgnoreCase("meeples peeples"))
 			{
-				return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!";
+				if(message.getMentionedMembers().isEmpty())
+				{
+					return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!";
+				}
+				return message.getMentionedMembers().get(0).getEffectiveName() + " has " + points.getPoints(message.getMentionedMembers().get(0).getUser().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!";
 			}
-			return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " beans!";
+			if(message.getMentionedMembers().isEmpty())
+			{
+				return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " points!";
+			}
+			return message.getMentionedMembers().get(0).getEffectiveName() + " has " + points.getPoints(message.getMentionedMembers().get(0).getUser().getId(), message.getGuild().getId()) + " points!";
 		}
 		
 		if(command[0].equalsIgnoreCase("bet"))
@@ -330,6 +341,16 @@ public class Command
 		if(command[0].equalsIgnoreCase("getResults"))
 		{
 			return polls.getResults(message.getGuild().getId());
+		}
+		
+		if(command[0].equalsIgnoreCase("wolfram"))
+		{
+			try {
+				return request.askWRA(line.substring(triggers.get(message.getGuild().getId()).length() + 7));
+			} catch (WAException e) 
+			{
+				System.out.println("Wolfram Error");
+			}
 		}
 		
 		System.out.println("Problem with message: " + message.getContentRaw());

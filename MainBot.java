@@ -22,7 +22,7 @@ public class MainBot extends ListenerAdapter
 			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
 			epi.getPresence().setGame(Game.playing("with an outlet"));
 			epi.addEventListener(new MainBot());
-			command.makeTriggers(epi.getGuilds());
+			command.makeTriggers(epi.getGuilds()); 
 	}
 	
 	@Override
