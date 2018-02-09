@@ -275,6 +275,19 @@ public class Command
         	return (request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
 		}
 		
+		// Compile a single c++ file
+		final String compileCommand = "g++";
+		if(command[0].equalsIgnoreCase(compileCommand))
+		{
+			// Clean input and strip grave character
+			String input = message.getContentRaw();
+			input = input.substring(triggers.get(msg_id).length() + compileCommand.length());
+			input = input.replace("`", " ");
+			input = input.trim();
+			
+			return ColiruReq.compileMessageCPP(input);
+		}
+		
 		// No response.
 		return new Response();
     }
