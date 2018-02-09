@@ -1,4 +1,15 @@
+
+##### Directorys
+# netbeans generated
 */nbproject/private/
 */build/
+
+# redundant netbeans exclusions
+/Dependencies/CopyLibs/
+/netbeansProject/
+
+##### Files
+# Key file and properties file for libraries
 Ref.java
 ref.java
+nblibraries.properties
