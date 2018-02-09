@@ -14,9 +14,10 @@ import net.dv8tion.jda.core.entities.Message;
 
 public class Command 
 {
-	ArrayList <String> mute = new ArrayList <String>(); 
-	ArrayList <String> listed = new ArrayList <String>();
-	HashMap <String, String> triggers = new HashMap<String, String>();
+    // Internal variables
+	ArrayList <String> mute = new ArrayList <>(); 
+	ArrayList <String> listed = new ArrayList <>();
+	HashMap <String, String> triggers = new HashMap<>();
 	RPManager manager = new RPManager();
 	PointCounter points = new PointCounter();
 	IgnoreList ignored = new IgnoreList();
@@ -25,341 +26,432 @@ public class Command
 	PollManager polls = new PollManager();
 	WolfRamReq request = new WolfRamReq(); 
 	
+	
+	// Called from the overridden function to encourage cleaner command 
+	// parsing. Returns a string which is the message sent back to users.
 	public String comSent(Message message, Member member, String cliid)
 	{
-		String line = message.getContentRaw();
-		if(words.check(line) && listed.contains(message.getGuild().getId()))
+		final String line = CleanLine(message.getContentRaw());
+        final String msg_id = message.getGuild().getId();
+        
+		// Do any upkeep that should happen before we get to the commands.
 		{
-			message.delete().queue();
-			return "Message deleted for inappropiate language.";
+			Response res = ProcessPreCommand(message, member, cliid);
+			if(res.isValid())
+				return res.getContent();
 		}
-		if(!isIgnore(member, message.getGuild().getId()))
+
+		// Manager upkeep
+		manager.addLine(message.getChannel().getId(), message.getAuthor().getName() + " " + line);
+		
+		// Command cleanup and parsing
+		String [] command = message.getContentRaw().split(" |\n|\t");
+		
+		// Confirm we have the trigger to run the command
+		if(!(command[0].startsWith(triggers.get(msg_id))))
+			return "";
+
+		// Remove Trigger
+		command[0] = command[0].substring(triggers.get(msg_id).length());
+		
+		//Start of Dev command
+		if(message.getAuthor().getId().equals("147407528874082304"))
 		{
-			points.addPoints(message.getAuthor().getId(), message.getGuild().getId(), 1);
+			Response res = ProcessCommandsDev(message, member, cliid, command);
+			if(res.isValid())
+				return res.getContent();
 		}
 		
+		// Confirm moderator status. If moderator, parse the command.
+		// The two mods pre-approved are RinTheSnowMew and Reverie Wisp for
+		// testing purposes.
+		if(isAuth(member, msg_id) 
+		|| message.getAuthor().getId().equals("147407528874082304")
+		|| message.getAuthor().getName().equals("145720924325412865"))
+		{
+			Response res = ProcessCommandsMod(message, member, cliid, command);
+			if(res.isValid())
+				return res.getContent();
+		}
+
+		// Confirm not muted. 
+		if(mute.contains(msg_id) || isIgnore(member, msg_id))
+			return "";
+                
+		//Start of non-mod commands
+		{
+			Response res = ProcessCommandsNonMod(message, member, cliid, command);
+			if(res.isValid())
+				return res.getContent();
+		}
+                
+		// If we're here, there was an issue.
+		System.out.println("Problem with message: " + message.getContentRaw());
+		return ""; // return "I dun know how to respond so have a :fish:"; 
+	}
+	
+	
+	
+	
+	// Cleans special characters off of lines for italics. Returns the cleaned
+	// line. If nothing was removed, line stays as it was.
+	String CleanLine(String line)
+	{
 		if((line.charAt(0) == '_' && line.charAt(line.length()-1) == '_') 
 				||(line.charAt(0) == '*' && line.charAt(line.length()-1) == '*'))
 		{
 			line = line.substring(1,line.length()-1);
 		}
-		manager.addLine(message.getChannel().getId(), message.getAuthor().getName() + " " + line);
 		
-		String [] command = message.getContentRaw().split(" |\n|\t");
-		
-		if(!(command[0].startsWith(triggers.get(message.getGuild().getId()))))
+		return line;
+	}
+	
+	
+	// Should be called before the command is processed otherwise.
+	// Note that there is no command array argument for this function.
+	Response ProcessPreCommand(Message message, Member member, String cliid)
+	{
+		final String line = CleanLine(message.getContentRaw());
+        final String msg_id = message.getGuild().getId();
+              
+		// Language filter
+		if(words.check(line) && listed.contains(msg_id))
 		{
-			return "";
-		}
-		command[0] = command[0].substring(triggers.get(message.getGuild().getId()).length());
-		
-		
-		//Start of Dev command
-		if(message.getAuthor().getId().equals("147407528874082304"))
-		{
-			if(command[0].equals("save"))
-			{
-				try {
-					points.writeToFile();
-					ignored.writeToFile();
-					authed.writeToFile();
-					return "Saved successfully!";
-					
-				} catch (FileNotFoundException e) 
-				{
-				} catch (UnsupportedEncodingException e) 
-				{
-				}
-			}
-			
-			if(command[0].equalsIgnoreCase("invitelink"))
-			{
-				return "https://discordapp.com/oauth2/authorize?&client_id=" + cliid + "&scope=bot&permissions=0";
-			}
+			message.delete().queue();
+			return new Response("Message deleted for inappropiate language.");
 		}
 		
-		
-		//Start of Mod commands
-		if(isAuth(member,message.getGuild().getId()) 
-				|| message.getAuthor().getName().equals("RinTheSnowMew"))
+		// If not ignored, we should add to the bean tracker!
+		if(!isIgnore(member, msg_id))
 		{
-			//Opts in and out of Blacklist
-			if(command[0].equalsIgnoreCase("stopList"))
-			{
-				listed.remove(message.getGuild().getId());
-				return "Blacklist disabled"; 
-			}
-			
-			if(command[0].equalsIgnoreCase("startList"))
-			{
-				listed.add(message.getGuild().getId());
-				return "Blacklist enabled";
-			}
-			
-			
-			//Mutes and unmutes bot
-			if(command[0].equalsIgnoreCase("mute"))
-			{
-				mute.add(message.getGuild().getId());
-				return "Being quiet now.";
-			}
-			if(command[0].equalsIgnoreCase("unmute"))
-			{
-				if(mute.contains(message.getGuild().getId()))
-				{
-					mute.remove(message.getGuild().getId());
-				}
-				return "I can talk again!";
-			}
-			
-			//Adds points to user
-			if(command[0].equalsIgnoreCase("addpoints"))
-			{
-				points.addPoints(message.getMentionedUsers().get(0).getId(),
-						message.getGuild().getId(), Integer.parseInt(command[2]));
-				return "You gave some beans to " + message.getMentionedUsers().get(0).getAsMention() + "!";
-			}
-			
-			//Removes points from user
-			if(command[0].equalsIgnoreCase("removepoints"))
-			{
-				points.subPoints(message.getMentionedUsers().get(0).getId(),
-						message.getGuild().getId(), Integer.parseInt(command[2]));
-				return "You took some beans from " + message.getMentionedUsers().get(0).getAsMention() + "!";
-			}
-			
-			//Ignore & un-ignore separate users
-			if(command[0].equalsIgnoreCase("ignore"))
-			{
-				if(message.getMentionedUsers().isEmpty())
-				{
-					return "No user provided.";
-				}
-				ignored.addName(message.getMentionedUsers().get(0).getId(), message.getGuild().getId()); 
-				return "Ignored " + message.getMentionedUsers().get(0).getName();
-			}
-			if(command[0].equalsIgnoreCase("unignore"))
-			{
-				if(message.getMentionedUsers().isEmpty())
-				{
-					return "No user provided.";
-				}
-				ignored.removeName(message.getMentionedUsers().get(0).getId(), message.getGuild().getId()); 
-				return "Unignored " + message.getMentionedUsers().get(0).getName();
-			}
-			
-			//Ignore & un-ignore separate roles
-			if(command[0].equalsIgnoreCase("ignorerole"))
-			{
-				if(message.getMentionedRoles().isEmpty())
-				{
-					return "No role provided.";
-				}
-				ignored.addRole(message.getMentionedRoles().get(0).getId(), message.getGuild().getId()); 
-				return "Ignored " + message.getMentionedRoles().get(0).getName();
-			}
-			if(command[0].equalsIgnoreCase("unignorerole"))
-			{
-				if(message.getMentionedRoles().isEmpty())
-				{
-					return "No role provided.";
-				}
-				ignored.removeRole(message.getMentionedRoles().get(0).getId(), message.getGuild().getId()); 
-				return "Unignored " + message.getMentionedRoles().get(0).getName();
-			}
-			
-			//Authorize users
-			if(command[0].equalsIgnoreCase("auth"))
-			{
-				if(message.getMentionedUsers().isEmpty())
-				{
-					return "No user provided.";
-				}
-				authed.addName(message.getMentionedUsers().get(0).getId(), message.getGuild().getId()); 
-				return "Authorized " + message.getMentionedUsers().get(0).getName();
-			}
-			if(command[0].equalsIgnoreCase("deauth"))
-			{
-				if(message.getMentionedUsers().isEmpty())
-				{
-					return "No user provided.";
-				}
-				authed.removeName(message.getMentionedUsers().get(0).getId(), message.getGuild().getId()); 
-				return "Deauthorized " + message.getMentionedUsers().get(0).getName();
-			}
-			
-			//Authorize and de-auth separate roles
-			if(command[0].equalsIgnoreCase("authrole"))
-			{
-				if(message.getMentionedRoles().isEmpty())
-				{
-					return "No role provided.";
-				}
-				authed.addRole(message.getMentionedRoles().get(0).getId(), message.getGuild().getId()); 
-				return "Authorized " + message.getMentionedRoles().get(0).getName();
-			}
-			if(command[0].equalsIgnoreCase("deauthrole"))
-			{
-				if(message.getMentionedRoles().isEmpty())
-				{
-					return "No role provided.";
-				}
-				authed.removeRole(message.getMentionedRoles().get(0).getId(), message.getGuild().getId()); 
-				return "Deauthorized " + message.getMentionedRoles().get(0).getName();
-			}
-			
-			if(command[0].equalsIgnoreCase("changeTrigger"))
-			{
-				if(command.length < 2)
-				{
-					return "No trigger given.";
-				}
-				
-				changeTrigger(message.getGuild().getId(), command[1]);
-				return "Trigger changed to: " + command[1];
-			}
-			
-			//Polling start and end 
-			if(command[0].equalsIgnoreCase("startPoll"))
-			{
-				line = message.getContentRaw().substring(11);
-				polls.newPoll(message.getGuild().getId(), line);
-				return "New question added! Don't forget to add choices!";
-			}
-			
-			if(command[0].equalsIgnoreCase("endPoll"))
-			{
-				return polls.endPoll(message.getGuild().getId());
-			}
-			
-			if(command[0].equalsIgnoreCase("addchoice"))
-			{
-				return polls.addChoice(message.getGuild().getId(), message.getContentRaw().substring(11));
-			}
+			points.addPoints(message.getAuthor().getId(), msg_id, 1);
 		}
 		
-		//Start of non-mod commands
-		if(mute.contains(message.getGuild().getId()) || isIgnore(member, message.getGuild().getId()))
-		{
-			return "";
-		}
-		//Help
-		if(command[0].equalsIgnoreCase("help"))
-		{
-			return "Hi! My name is KittyBot! I can do lots of things! "
-					+ "\nIf you " + triggers.get(message.getGuild().getId()) + "boop I'll boop you right back!"
-					+ "\nIf you " + triggers.get(message.getGuild().getId()) + "roll I'll need a dice like this 1d4 or 10d7"
-					+ "\nTo see your current amount of beans just " + triggers.get(message.getGuild().getId()) + "points"
-					+ "\nAnd if you wanna bet 100 beans for a chance for more you can always " + triggers.get(message.getGuild().getId()) + "bet"
-					+ "\nIf you give me some stuff to " + triggers.get(message.getGuild().getId()) + "choose from just remember to put commas in between"
-					+ "\nAnd if you want me to keep track of your RP you can " + triggers.get(message.getGuild().getId()) + "rpstart just don't forget to " + triggers.get(message.getGuild().getId()) + "rpend";
-		} 
+		// Default return
+		return new Response();
+	}
+	
+	
+	// Developer only commands. Used mostly for testing.
+	Response ProcessCommandsDev(Message message, Member member, String cliid, String[] command)
+	{
+		final String line = CleanLine(message.getContentRaw());
+        final String msg_id = message.getGuild().getId();
 		
-		if(command[0].equalsIgnoreCase("info"))
+		if(command[0].equals("save"))
 		{
-			return "Developed by Rin. \nRepository is <https://github.com/RinSnowMew/KittyBot> "
-					+ "\nIcon by the very talented Meep\nhttp://www.furaffinity.net/view/25966081/"
-					+ "\nhttp://d.facdn.net/art/meep/1515216535/1515216535.meep_kittybot.png";
+			try {
+				points.writeToFile();
+				ignored.writeToFile();
+				authed.writeToFile();
+				return new Response("Saved successfully!");
+
+			} 
+			catch (FileNotFoundException e) { } 
+			catch (UnsupportedEncodingException e) { }
 		}
-		if(command[0].equalsIgnoreCase("boop"))
+			
+		if(command[0].equalsIgnoreCase("invitelink"))
 		{
+			return new Response("https://discordapp.com/oauth2/authorize?&client_id=" + cliid + "&scope=bot&permissions=0");
+		}
+		
+		// Default to no response
+		return new Response();
+	}
+	
+    Response ProcessCommandsNonMod(Message message, Member member, String cliid, String[] command)
+    {
+        final String line = CleanLine(message.getContentRaw());
+        final String msg_id = message.getGuild().getId();
+        
+
+        // Help output
+		//@TODO: Move to external file.
+        if(command[0].equalsIgnoreCase("help"))
+        {
+			return new Response("Hi! My name is KittyBot! I can do lots of things! "
+							  + "\nIf you " + triggers.get(msg_id) + "boop I'll boop you right back!"
+							  + "\nIf you " + triggers.get(msg_id) + "roll I'll need a dice like this 1d4 or 10d7"
+							  + "\nTo see your current amount of beans just " + triggers.get(msg_id) + "points"
+							  + "\nAnd if you wanna bet 100 beans for a chance for more you can always " + triggers.get(msg_id) + "bet"
+							  + "\nIf you give me some stuff to " + triggers.get(msg_id) + "choose from just remember to put commas in between"
+							  + "\nAnd if you want me to keep track of your RP you can " + triggers.get(msg_id) + "rpstart just don't forget to " + triggers.get(message.getGuild().getId()) + "rpend"
+			);
+        } 
+
+		// Info output
+		//@TODO: Move to external file.
+        if(command[0].equalsIgnoreCase("info"))
+        {
+			return new Response("Developed by Rin. \nRepository is <https://github.com/RinSnowMew/KittyBot> "
+							+ "\nIcon by the very talented Meep\nhttp://www.furaffinity.net/view/25966081/"
+							+ "\nhttp://d.facdn.net/art/meep/1515216535/1515216535.meep_kittybot.png"
+			);
+        }
+        if(command[0].equalsIgnoreCase("boop"))
+        {
 			if(message.getMentionedUsers().isEmpty())
 			{
-				return "*Boops " +message.getAuthor().getAsMention() + " right back!*";
+				return new Response("*Boops " +message.getAuthor().getAsMention() + " right back!*");
 			}
-			return "*Boops " + message.getMentionedUsers().get(0).getAsMention() + " everywhere!*";
-		}
-		
-		//Method call and response 
-		
-		if(command[0].equalsIgnoreCase("roll"))
-		{
-			return rollDice(command);
-		}
-		
-		if(command[0].equalsIgnoreCase("choose"))
-		{
-			return choose(message.getContentRaw());
-		}
-		
-		if(command[0].equalsIgnoreCase("points"))
-		{
+			return new Response("*Boops " + message.getMentionedUsers().get(0).getAsMention() + " everywhere!*");
+        }
+
+        //Method call and response 
+        if(command[0].equalsIgnoreCase("roll"))
+        {
+			return new Response(rollDice(command));
+        }
+
+        if(command[0].equalsIgnoreCase("choose"))
+        {
+			return new Response(choose(message.getContentRaw()));
+        }
+
+        if(command[0].equalsIgnoreCase("points"))
+        {
 			if(message.getGuild().getName().equalsIgnoreCase("meeples peeples"))
 			{
 				if(message.getMentionedMembers().isEmpty())
 				{
-					return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!";
+					return new Response("You have " + points.getPoints(message.getAuthor().getId(), msg_id) + " <:beens:396127956428390401>!");
 				}
-				return message.getMentionedMembers().get(0).getEffectiveName() + " has " + points.getPoints(message.getMentionedMembers().get(0).getUser().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!";
+				
+				return new Response(message.getMentionedMembers().get(0).getEffectiveName() + " has " + points.getPoints(message.getMentionedMembers().get(0).getUser().getId(), message.getGuild().getId()) + " <:beens:396127956428390401>!");
 			}
 			if(message.getMentionedMembers().isEmpty())
 			{
-				return "You have " + points.getPoints(message.getAuthor().getId(), message.getGuild().getId()) + " points!";
+				return new Response("You have " + points.getPoints(message.getAuthor().getId(), msg_id) + " points!");
 			}
-			return message.getMentionedMembers().get(0).getEffectiveName() + " has " + points.getPoints(message.getMentionedMembers().get(0).getUser().getId(), message.getGuild().getId()) + " points!";
-		}
-		
-		if(command[0].equalsIgnoreCase("bet"))
-		{
-			return points.betStart(message.getAuthor().getId(),message.getGuild().getId());
-		}
-		
-		if(command[0].equalsIgnoreCase("rpstart"))
-		{
+			
+			return new Response(message.getMentionedMembers().get(0).getEffectiveName() + " has " + points.getPoints(message.getMentionedMembers().get(0).getUser().getId(), message.getGuild().getId()) + " points!");
+        }
+
+        if(command[0].equalsIgnoreCase("bet"))
+        {
+			return new Response(points.betStart(message.getAuthor().getId(),msg_id));
+        }
+
+        if(command[0].equalsIgnoreCase("rpstart"))
+        {
 			manager.newRP(message.getChannel().getId());
-			return "RP Started";
-		}
-		
-		if(command[0].equalsIgnoreCase("rpend"))
-		{
+			return new Response("RP Started");
+        }
+
+        if(command[0].equalsIgnoreCase("rpend"))
+        {
 			if(command.length == 1)
 			{
 				message.getChannel().sendFile(manager.endRP(message.getChannel().getId(), "RP")).queue();
-				return "RP ended, there's your log!";
+				return new Response("RP ended, there's your log!");
 			}
 			else
 			{
 				message.getChannel().sendFile(manager.endRP(message.getChannel().getId(), command[1])).queue();
-				return "RP ended, there's your log!";
+				return new Response("RP ended, there's your log!");
 			}
-		}
-		
-		if(command[0].equalsIgnoreCase("vote"))
-		{
+        }
+
+        if(command[0].equalsIgnoreCase("vote"))
+        {
 			if(isInteger(command[1]))
 			{
-				return polls.newVote(message.getGuild().getId(), message.getAuthor().getId(), Integer.parseInt(command[1]));
+				return new Response(polls.newVote(msg_id, message.getAuthor().getId(), Integer.parseInt(command[1])));
 			}
-			return "Please enter a real number choice"; 
-		}
-		
-		if(command[0].equalsIgnoreCase("getPoll"))
-		{
-			return polls.getQuestion(message.getGuild().getId());
-		}
-		
-		if(command[0].equalsIgnoreCase("getResults"))
-		{
-			return polls.getResults(message.getGuild().getId());
-		}
-		
-		if(command[0].equalsIgnoreCase("wolfram"))
-		{
-			try {
-				return request.askWRA(line.substring(triggers.get(message.getGuild().getId()).length() + 7));
-			} catch (WAException e) 
+
+			return new Response("Please enter a real number choice"); 
+        }
+
+        if(command[0].equalsIgnoreCase("getPoll"))
+        {
+			return new Response(polls.getQuestion(msg_id));
+        }
+
+        if(command[0].equalsIgnoreCase("getResults"))
+        {
+			return new Response(polls.getResults(msg_id));
+        }
+
+        if(command[0].equalsIgnoreCase("wolfram"))
+        {
+			try 
+			{
+				return new Response(request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
+			} 
+			catch (WAException e) 
 			{
 				System.out.println("Wolfram Error");
 			}
 		}
 		
-		System.out.println("Problem with message: " + message.getContentRaw());
-		
-		return "";
-//		return "I dun know how to respond so have a :fish:"; 
-	}
-	
-	
+		// No response.
+		return new Response();
+    }
+    
+    
+    // These commands can only be called by a moderator.
+    Response ProcessCommandsMod(Message message, Member member, String cliid, String[] command)
+    {
+        final String line = CleanLine(message.getContentRaw());
+        final String msg_id = message.getGuild().getId();
+
+
+		//Opts in and out of Blacklist
+		if(command[0].equalsIgnoreCase("stopList"))
+		{
+				listed.remove(msg_id);
+				return new Response("Blacklist disabled"); 
+		}
+		if(command[0].equalsIgnoreCase("startList"))
+		{
+				listed.add(msg_id);
+				return new Response("Blacklist enabled");
+		}
+
+
+		//Mutes and unmutes bot
+		if(command[0].equalsIgnoreCase("mute"))
+		{
+				mute.add(msg_id);
+				return new Response("Being quiet now.");
+		}
+		if(command[0].equalsIgnoreCase("unmute"))
+		{
+				if(mute.contains(msg_id))
+				{
+						mute.remove(msg_id);
+				}
+				return new Response("I can talk again!");
+		}
+
+		//Adds points to user
+		if(command[0].equalsIgnoreCase("addpoints"))
+		{
+				points.addPoints(message.getMentionedUsers().get(0).getId(),
+								msg_id, Integer.parseInt(command[2]));
+				return new Response("You gave some beans to " + message.getMentionedUsers().get(0).getAsMention() + "!");
+		}
+
+		//Removes points from user
+		if(command[0].equalsIgnoreCase("removepoints"))
+		{
+				points.subPoints(message.getMentionedUsers().get(0).getId(),
+								msg_id, Integer.parseInt(command[2]));
+				return new Response("You took some beans from " + message.getMentionedUsers().get(0).getAsMention() + "!");
+		}
+
+		//Ignore & un-ignore separate users
+		if(command[0].equalsIgnoreCase("ignore"))
+		{
+				if(message.getMentionedUsers().isEmpty())
+				{
+						return new Response("No user provided.");
+				}
+				ignored.addName(message.getMentionedUsers().get(0).getId(), msg_id); 
+				return new Response("Ignored " + message.getMentionedUsers().get(0).getName());
+		}
+		if(command[0].equalsIgnoreCase("unignore"))
+		{
+				if(message.getMentionedUsers().isEmpty())
+				{
+						return new Response("No user provided.");
+				}
+				ignored.removeName(message.getMentionedUsers().get(0).getId(), msg_id); 
+				return new Response("Unignored " + message.getMentionedUsers().get(0).getName());
+		}
+
+		//Ignore & un-ignore separate roles
+		if(command[0].equalsIgnoreCase("ignorerole"))
+		{
+				if(message.getMentionedRoles().isEmpty())
+				{
+						return new Response("No role provided.");
+				}
+				ignored.addRole(message.getMentionedRoles().get(0).getId(), msg_id); 
+				return new Response("Ignored " + message.getMentionedRoles().get(0).getName());
+		}
+		if(command[0].equalsIgnoreCase("unignorerole"))
+		{
+				if(message.getMentionedRoles().isEmpty())
+				{
+						return new Response("No role provided.");
+				}
+				ignored.removeRole(message.getMentionedRoles().get(0).getId(), msg_id); 
+				return new Response("Unignored " + message.getMentionedRoles().get(0).getName());
+		}
+
+		//Authorize users
+		if(command[0].equalsIgnoreCase("auth"))
+		{
+				if(message.getMentionedUsers().isEmpty())
+				{
+						return new Response("No user provided.");
+				}
+				authed.addName(message.getMentionedUsers().get(0).getId(), msg_id); 
+				return new Response("Authorized " + message.getMentionedUsers().get(0).getName());
+		}
+		if(command[0].equalsIgnoreCase("deauth"))
+		{
+				if(message.getMentionedUsers().isEmpty())
+				{
+						return new Response("No user provided.");
+				}
+				authed.removeName(message.getMentionedUsers().get(0).getId(), msg_id); 
+				return new Response("Deauthorized " + message.getMentionedUsers().get(0).getName());
+		}
+
+		//Authorize and de-auth separate roles
+		if(command[0].equalsIgnoreCase("authrole"))
+		{
+				if(message.getMentionedRoles().isEmpty())
+				{
+						return new Response("No role provided.");
+				}
+				authed.addRole(message.getMentionedRoles().get(0).getId(), msg_id); 
+				return new Response("Authorized " + message.getMentionedRoles().get(0).getName());
+		}
+		if(command[0].equalsIgnoreCase("deauthrole"))
+		{
+				if(message.getMentionedRoles().isEmpty())
+				{
+						return new Response("No role provided.");
+				}
+				authed.removeRole(message.getMentionedRoles().get(0).getId(), msg_id); 
+				return new Response("Deauthorized " + message.getMentionedRoles().get(0).getName());
+		}
+
+		if(command[0].equalsIgnoreCase("changeTrigger"))
+		{
+				if(command.length < 2)
+				{
+						return new Response("No trigger given.");
+				}
+
+				changeTrigger(msg_id, command[1]);
+				return new Response("Trigger changed to: " + command[1]);
+		}
+
+		//Polling start and end 
+		if(command[0].equalsIgnoreCase("startPoll"))
+		{
+				String poll_content = message.getContentRaw().substring(11);
+				polls.newPoll(msg_id, poll_content);
+				return new Response("New question added! Don't forget to add choices!");
+		}
+
+		if(command[0].equalsIgnoreCase("endPoll"))
+		{
+				return new Response(polls.endPoll(msg_id));
+		}
+
+		if(command[0].equalsIgnoreCase("addchoice"))
+		{
+				return new Response(polls.addChoice(msg_id, message.getContentRaw().substring(11)));
+		}
+
+        return new Response();
+    }
 	
 	private boolean isAuth(Member person, String server)
 	{
