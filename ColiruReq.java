@@ -15,7 +15,9 @@ public class ColiruReq
 	// Ofc
 	public static Response compileMessageCPP(String msg)
 	{
-		Response res = HTTPUtils.SendGETRequest("http://coliru.stacked-crooked.com/compile -d '{\"cmd\": \"g++-4.8 main.cpp && ./a.out\", \"src\": \"#include <iostream>\nint main(){    std::cout << \"Hello World!\" << std::endl;}");
+		Response res = HTTPUtils.SendPOSTRequest("http://coliru.stacked-crooked.com/compile"
+				, "{ \"cmd\": \"g++ main.cpp && ./a.out\", \"src\": \"" + msg + "\" }");
+		
 		return res;
 	}
 }

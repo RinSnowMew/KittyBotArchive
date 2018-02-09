@@ -275,6 +275,12 @@ public class Command
         	return (request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
 		}
 		
+		final String compileCommand = "g++";
+		if(command[0].equalsIgnoreCase(compileCommand))
+		{
+			return ColiruReq.compileMessageCPP(line.substring(triggers.get(msg_id).length() + compileCommand.length()));
+		}
+		
 		// No response.
 		return new Response();
     }
