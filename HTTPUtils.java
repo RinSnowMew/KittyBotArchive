@@ -113,8 +113,11 @@ public class HTTPUtils {
 				new InputStreamReader(con.getInputStream()));
 
 			// Read all lines from the response
-			while ((inputLine = in.readLine()) != null) {
+			inputLine = in.readLine();
+			while (inputLine != null) {
+				response.append('\n');
 				response.append(inputLine);
+				inputLine = in.readLine();
 			}
 
 			// Close and return our data
