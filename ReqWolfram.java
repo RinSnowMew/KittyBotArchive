@@ -1,10 +1,10 @@
 package main.java.net.dv8tion;
 
-public class WolfRamReq 
+public class ReqWolfram 
 {
 	Response answer = new Response();
 	
-	public WolfRamReq()
+	public ReqWolfram()
 	{
 		
 	}

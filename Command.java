@@ -22,7 +22,7 @@ public class Command
 	AuthList authed = new AuthList();
 	Blacklist words = new Blacklist();
 	PollManager polls = new PollManager();
-	WolfRamReq request = new WolfRamReq(); 
+	ReqWolfram request = new ReqWolfram(); 
 	
 	
 	// Called from the overridden function to encourage cleaner command 
@@ -273,6 +273,24 @@ public class Command
         if(command[0].equalsIgnoreCase("wolfram"))
         {
         	return (request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
+		}
+		
+		// Compile a single c++ file
+		final String compileCommand = "g++";
+		if(command[0].equalsIgnoreCase(compileCommand))
+		{
+			// Clean input and strip grave character
+			String input = message.getContentRaw();
+			input = input.substring(triggers.get(msg_id).length() + compileCommand.length());
+			input = input.replace("`", " ");
+			input = input.trim();
+			
+			// Delete syntax highlighting characters
+			if(input.charAt(0) == 'c' || input.charAt(0) == 'C')
+				input = input.substring(1);
+			
+			// Issue request
+			return ReqColiru.compileMessageCPP(input);
 		}
 		
 		// No response.
