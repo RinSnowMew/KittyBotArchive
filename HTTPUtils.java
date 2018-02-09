@@ -121,8 +121,8 @@ public class HTTPUtils {
 			in.close();
 			return new Response(response.toString());
 		} else {
-			System.out.println(con.getRequestMethod() + " request did not work!");
-			return new Response();
+			System.out.println(con.getRequestMethod() + " responded with " + responseCode + " instead of 200.");
+			return new Response(responseCode);
 		}
 	}
 }

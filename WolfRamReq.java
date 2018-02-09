@@ -11,17 +11,22 @@ public class WolfRamReq
 	
 	public Response askWRA(String input) 
 	{
+		// Clean up request and replace problematic characters.
 		input = input.trim();
 		input = input.replace("+", "%2B");
-		System.out.println("appid=" +Ref.wolfRamID + "&i=" + input);
-		answer = HTTPUtils.SendPOSTRequest("http://api.wolframalpha.com/v1/result", "appid=" +Ref.wolfRamID + "&i=" + input);
-		System.out.println(answer.getContent()
-				);
 		
-		if(answer.getContent().equalsIgnoreCase("No short answer available"))
+		// Configure and send request
+		answer = HTTPUtils.SendPOSTRequest("https://api.wolframalpha.com/v1/result","appid=" + Ref.wolfRamID + "&i=" + input);
+		
+		// Trim content and see if no answer was availables, or see if we got a
+		// not-implemented error, which is what wolfram likes to hand back
+		if(answer.getContent().trim().equalsIgnoreCase("No short answer available")
+	    || answer.getErrorCode() == Response.EC_HTTP_501_NOT_IMPLEMENTED)
 		{
 			return new Response("Kitty can't find that ;3;");
 		}
+		
+		// Return result!
 		return answer;
 	}
 }
