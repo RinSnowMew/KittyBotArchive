@@ -285,6 +285,11 @@ public class Command
 			input = input.replace("`", " ");
 			input = input.trim();
 			
+			// Delete syntax highlighting characters
+			if(input.charAt(0) == 'c' || input.charAt(0) == 'C')
+				input = input.substring(1);
+			
+			// Issue request
 			return ColiruReq.compileMessageCPP(input);
 		}
 		

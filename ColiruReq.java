@@ -31,7 +31,23 @@ public class ColiruReq
 		{
 			// Format the response recieved!
 			String out = res.getContent();
-			out = "Output: ```\n" + out + "\n```";
+			
+			// Clean up length if it's way too long
+			final int reasonableLimit = 1000;
+			if(out.length() > reasonableLimit)
+			{
+				// Limit the output
+				out = out.substring(0, reasonableLimit);
+				out += "\n\n...```\n...yea, I think that's enough output for now! ^^;";
+			}
+			else
+			{
+				// Non-extra output finish.
+				out += "\n```";
+			}
+			
+			// Format output
+			out = "Here's what I've got for you! ```\n" + out ;
 			return new Response(out);
 		}
 		
