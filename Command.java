@@ -22,7 +22,7 @@ public class Command
 	AuthList authed = new AuthList();
 	Blacklist words = new Blacklist();
 	PollManager polls = new PollManager();
-	WolfRamReq request = new WolfRamReq(); 
+	ReqWolfram request = new ReqWolfram(); 
 	
 	
 	// Called from the overridden function to encourage cleaner command 
@@ -290,7 +290,7 @@ public class Command
 				input = input.substring(1);
 			
 			// Issue request
-			return ColiruReq.compileMessageCPP(input);
+			return ReqColiru.compileMessageCPP(input);
 		}
 		
 		// No response.
