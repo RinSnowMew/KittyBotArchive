@@ -276,12 +276,12 @@ public class Command
 		}
 		
 		// Compile a single c++ file
-		final String compileCommand = "g++";
-		if(command[0].equalsIgnoreCase(compileCommand))
+		final String compileCommandCpp = "c++";
+		if(command[0].equalsIgnoreCase(compileCommandCpp))
 		{
 			// Clean input and strip grave character
 			String input = message.getContentRaw();
-			input = input.substring(triggers.get(msg_id).length() + compileCommand.length());
+			input = input.substring(triggers.get(msg_id).length() + compileCommandCpp.length());
 			input = input.replace("`", " ");
 			input = input.trim();
 			
