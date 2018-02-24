@@ -15,10 +15,10 @@ public class ReqE621
 	public ReqE621() { } 
 	
 	// Requests a specific image, then returns a few.
-	public Response searchForResults(String input)
+	public static Response searchForResults(String input)
 	{
 		// Clean up request and replace problematic characters.
-		final int limit = 3;
+		final int limit = 1;
 		input = input.trim();
 		input = input.replace("+", "%2B");
 		input = input.replace(" ", "%20");
@@ -29,6 +29,8 @@ public class ReqE621
 		if(res.isValid())
 		{
 			String out = res.getContent();
+			out = "Raw output: " + out;
+			res.setContent(out);
 			// parse 'out' as JSON response! Note: Comes as array object.
 		}
 		

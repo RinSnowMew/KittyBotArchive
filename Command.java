@@ -294,6 +294,9 @@ public class Command
 			return ReqColiru.compileMessageCPP(input);
 		}
 		
+		if(command[0].equalsIgnoreCase("e621"))
+			return ReqE621.searchForResults(command[1].trim());
+		
 		// No response.
 		return new Response();
     }

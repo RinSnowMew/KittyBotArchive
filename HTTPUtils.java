@@ -16,7 +16,7 @@ import java.net.URL;
 public class HTTPUtils {
 
 	// Configuration for requests
-	private static final String USER_AGENT = "Mozilla/5.0";
+	private static final String USER_AGENT = "KittyBot/1.0";
 	
 	
 	/*
@@ -73,7 +73,7 @@ public class HTTPUtils {
 			// Get and open a connection, stored in connection object
 			URL obj = new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
+			
 			// Set ourselves as if we're "vaguely netscape"
 			con.setRequestMethod("POST");
 			con.setRequestProperty("User-Agent", USER_AGENT);
