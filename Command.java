@@ -1,5 +1,8 @@
 package main.java.net.dv8tion;
 
+import main.java.net.dv8tion.HTTPRequests.ReqColiru;
+import main.java.net.dv8tion.HTTPRequests.ReqWolfram;
+import main.java.net.dv8tion.HTTPRequests.ReqE621;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -294,8 +297,13 @@ public class Command
 			return ReqColiru.compileMessageCPP(input);
 		}
 		
-		if(command[0].equalsIgnoreCase("e621"))
-			return ReqE621.searchForResults(command[1].trim());
+		final String searchE621Command = "e621";
+		if(command[0].equalsIgnoreCase(searchE621Command))
+		{
+			String input = message.getContentRaw();
+			input = input.substring(triggers.get(msg_id).length() + searchE621Command.length());
+			return ReqE621.searchForResults(input);
+		}
 		
 		// No response.
 		return new Response();
