@@ -1,13 +1,11 @@
-package main.java.net.dv8tion;
+package main.java.net.dv8tion.HTTPRequests;
+
+import main.java.net.dv8tion.Ref;
+import main.java.net.dv8tion.Response;
 
 public class ReqWolfram 
-{
-	Response answer = new Response();
-	
-	public ReqWolfram()
-	{
-		
-	}
+{	
+	public ReqWolfram() { }
 	
 	public Response askWRA(String input) 
 	{
@@ -16,7 +14,7 @@ public class ReqWolfram
 		input = input.replace("+", "%2B");
 		
 		// Configure and send request
-		answer = HTTPUtils.SendPOSTRequest("https://api.wolframalpha.com/v1/result","appid=" + Ref.wolfRamID + "&i=" + input);
+		Response answer = HTTPUtils.SendPOSTRequest("https://api.wolframalpha.com/v1/result","appid=" + Ref.wolfRamID + "&i=" + input);
 		
 		// Trim content and see if no answer was availables, or see if we got a
 		// not-implemented error, which is what wolfram likes to hand back
