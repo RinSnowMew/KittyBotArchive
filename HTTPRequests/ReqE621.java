@@ -8,7 +8,14 @@ import com.google.gson.Gson;
 import main.java.net.dv8tion.Response;
 
 /**
- *
+ * This is the e621 request class, designed for form and parse requests that
+ * use the e621 API, and is entirely static. 
+ * 
+ * If you ever find this class randomly not working,
+ * it may be a good idea to make sure the user agent string is set in 
+ * HTTPUtils to something other than a browser emulating string, or the default
+ * java one.
+ * 
  * @author Wisp
  */
 public class ReqE621 
@@ -16,7 +23,7 @@ public class ReqE621
 	  ///////////////////////////////////////
 	 // Internal JSON class and variables //
 	//////////////////////////////////.////
-	private static Gson jsonParser_ = new Gson();
+	private final static Gson jsonParser_ = new Gson();
 	private static int maxSearchResults_ = 1;
 	private class E621ResponseObject
 	{
@@ -43,7 +50,11 @@ public class ReqE621
 		input = input.replace(" ", "%20");
 		
 		// Configure and send request
-		Response res = HTTPUtils.SendPOSTRequest("https://e621.net/post/index.json", "tags=" + input + "&limit=" + maxSearchResults_ + "&rating=safe");
+		Response res = HTTPUtils.SendPOSTRequest("https://e621.net/post/index.json"
+			, "tags=" + input + "&limit=" + maxSearchResults_ + "&rating=safe");
+		
+		// Confirm the request is valid. Other cases checking for EC_E621 error codes
+		// as defined in Response.java may be good.
 		if(res.isValid())
 		{
 			// Use class evaluation on an array of the response object to be able to hold multiple.
@@ -65,8 +76,24 @@ public class ReqE621
 		return new Response("I had some trouble searching e621 for that ^^;");
 	}
 	
+	// Safely sets the maximum number of searches to something erasonable
+	public static Response SetMaxSearchResults(int num_results) 
+	{
+		Response res = new Response("I set the e621 image response limit to " + num_results + "!");
+		
+		if(num_results < 1)
+			return new Response("Please enter a number bigger than 0!");
+		else if(num_results > 10)
+			return new Response("...That may be too many. How about something more reasonable, like 5?");
+		
+		// Set the result accordingly
+		maxSearchResults_ = num_results; 
+		return res;
+	}
 	
-	// Get/Set
-	public static void SetMaxSearchResults(int num_results) { maxSearchResults_ = num_results; }
-	public static int GetMaxSearchResults()                 { return maxSearchResults_; }
+	// Returns the internal variable that limits the number of posts e621 will hand back
+	public static int GetMaxSearchResults()
+	{ 
+		return maxSearchResults_; 
+	}
 }
