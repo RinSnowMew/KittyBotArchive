@@ -81,9 +81,7 @@ public class ReqE621
 			
 			// Set the response information.
 			res.setContent(output);
-			//return res;
-			System.out.println(res.getContent());
-			return new Response("Response recieved, snipped by Wisp.");
+			return res;
 		}
 		
 		//Print out any issues.
