@@ -1,5 +1,8 @@
 package main.java.net.dv8tion;
 
+import main.java.net.dv8tion.HTTPRequests.ReqColiru;
+import main.java.net.dv8tion.HTTPRequests.ReqWolfram;
+import main.java.net.dv8tion.HTTPRequests.ReqE621;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -294,6 +297,14 @@ public class Command
 			return ReqColiru.compileMessageCPP(input);
 		}
 		
+		final String searchE621Command = "e621";
+		if(command[0].equalsIgnoreCase(searchE621Command))
+		{
+			String input = message.getContentRaw();
+			input = input.substring(triggers.get(msg_id).length() + searchE621Command.length());
+			return ReqE621.searchForResults(input);
+		}
+		
 		// No response.
 		return new Response();
     }
@@ -317,7 +328,6 @@ public class Command
 				listed.add(msg_id);
 				return new Response("Blacklist enabled");
 		}
-
 
 		//Mutes and unmutes bot
 		if(command[0].equalsIgnoreCase("mute"))
@@ -430,35 +440,49 @@ public class Command
 				return new Response("Deauthorized " + message.getMentionedRoles().get(0).getName());
 		}
 
+		// Change the character that is used to tell KittyBot there's a command
 		if(command[0].equalsIgnoreCase("changeTrigger"))
 		{
-				if(command.length < 2)
-				{
-						return new Response("No trigger given.");
-				}
+			if(command.length < 2)
+			{
+					return new Response("No trigger given.");
+			}
 
-				changeTrigger(msg_id, command[1]);
-				return new Response("Trigger changed to: " + command[1]);
+			changeTrigger(msg_id, command[1]);
+			return new Response("Trigger changed to: " + command[1]);
 		}
 
-		//Polling start and end 
+		// Polling and associated
 		if(command[0].equalsIgnoreCase("startPoll"))
 		{
-				String poll_content = message.getContentRaw().substring(11);
-				polls.newPoll(msg_id, poll_content);
-				return new Response("New question added! Don't forget to add choices!");
+			String poll_content = message.getContentRaw().substring(11);
+			polls.newPoll(msg_id, poll_content);
+			return new Response("New question added! Don't forget to add choices!");
 		}
-
 		if(command[0].equalsIgnoreCase("endPoll"))
 		{
-				return new Response(polls.endPoll(msg_id));
+			return new Response(polls.endPoll(msg_id));
 		}
-
 		if(command[0].equalsIgnoreCase("addchoice"))
 		{
-				return new Response(polls.addChoice(msg_id, message.getContentRaw().substring(11)));
+			return new Response(polls.addChoice(msg_id, message.getContentRaw().substring(11)));
 		}
 
+		if(command[0].equalsIgnoreCase("E621Limit"))
+		{
+			// Create and parse int.
+			int new_limit = 0;
+			try
+			{ 
+				new_limit = Integer.parseInt(command[1]); 
+			}
+			catch (Exception e) 
+			{ 
+				return new Response("Eeep! That doesn't make sense! ;3;"); 
+			}
+
+			return ReqE621.SetMaxSearchResults(new_limit);
+		}
         return new Response();
     }
 	

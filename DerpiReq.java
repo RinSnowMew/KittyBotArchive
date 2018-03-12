@@ -1,5 +1,6 @@
 package main.java.net.dv8tion;
 
+import main.java.net.dv8tion.HTTPRequests.HTTPUtils;
 import com.google.gson.Gson;
 
 public class DerpiReq 
