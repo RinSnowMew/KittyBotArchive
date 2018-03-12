@@ -20,7 +20,7 @@ public class MainBot extends ListenerAdapter
 			throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException
 	{
 			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
-			epi.getPresence().setGame(Game.playing("with an outlet"));
+			epi.getPresence().setGame(Game.playing("with a Ty kitty ^^"));
 			epi.addEventListener(new MainBot());
 			command.makeTriggers(epi.getGuilds()); 
 	}

@@ -14,7 +14,8 @@ import java.util.Set;
 
 public class PointCounter 
 {
-	HashMap<String, Integer> pointmap = new HashMap<String, Integer>();
+	HashMap<String, Integer> pointmap = new HashMap<String, Integer>(); 
+        HashMap<String, long []> highlowmap = new HashMap<String, long []>(); //K = server + user V = [Their number, Guesses left, Timeout time]
 	public PointCounter() 
 	{
 		try {
@@ -137,7 +138,101 @@ public class PointCounter
 		}
 		return nums; 
 	}
-	
+        
+        public String highlow(String user, String server, String [] command)
+        {
+                if(command.length>=2) 
+                {
+                    String end = "";
+                    try 
+                    {
+                        Long.parseLong(command[1]);
+                    }
+                    catch(NumberFormatException e){ return "That is not a number!"; }
+                    long guess = Long.parseLong(command[1]);
+                    if(highlowmap.containsKey(server + user) 
+                            && highlowmap.get(server + user)[2] > System.currentTimeMillis() - 90000
+                            && highlowmap.get(server + user)[1] > 0)
+                    {
+                        long [] authorHash = highlowmap.get(server + user);
+                        if(authorHash[0] == guess)
+                        {
+                                pointmap.put(server + user, pointmap.get(server + user) + 
+                                        100 * (int)authorHash[1]); //gives 100*guesses left
+                                highlowmap.remove(server + user);
+                                end = "You did it! +" + 100 * (int)authorHash[1] + " beans!";
+                                return end + "\nYou now have " + pointmap.get(server + user) + " beans!";
+                        }
+                        else
+                        {
+                            if(authorHash[1] == 1)
+                            {
+                                    authorHash[1]--;
+                                    return "nope... that's not it. ;n;\nFeel free to try again ^^";
+                            }
+                            else
+                            {
+                                    authorHash[1]--;
+                                    return guessNumber((int) guess, (int) authorHash[0]) 
+                                        + "\nYou have " + authorHash[1] + " guesses left ^^";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(pointmap.containsKey(server + user))
+                        {
+                                if(pointmap.get(server + user)>=100)
+                                {
+                                        pointmap.put(server + user, pointmap.get(server + user)-100);
+                                }
+                                else
+                                {
+                                        return "You no has 'nuff beans! D:";
+                                }
+                        }
+                        else
+                        {
+                                return "User not available.";
+                        }
+                        long theirNumber = (long) (Math.random()*100);
+                        highlowmap.put(server + user, new long[]{theirNumber, 5L, System.currentTimeMillis()});
+                        long [] authorHash = highlowmap.get(server + user);
+                        if (guess == theirNumber)
+                        {
+                                pointmap.put(server + user, pointmap.get(server + user) + 
+                                         100 * (int)authorHash[1]); //gives 100*guesses left
+                                highlowmap.remove(server + user);
+                                end = "You did it! +" + 100 * (int)authorHash[1] + " beans!";
+                                return end + "\nYou now have " + pointmap.get(server + user) + " beans!";
+                        }
+                        else
+                        {
+                                return guessNumber((int) guess, (int) theirNumber) + 
+                                        "\nYou have " + authorHash[1] + " guesses left ^^";
+                        }
+                    }
+                }
+                else
+                {
+                    if(highlowmap.containsKey(server + user))
+                    {
+                        highlowmap.get(server + user)[2] = System.currentTimeMillis();
+                        return "You have " + highlowmap.get(server + user)[1] + " guesses left ^^";
+                    }
+                    else
+                    {
+                        return "You havent started guessing yet!\nto start try !highlow and a number to guess!";
+                    }
+                }
+        }
+	private String guessNumber(int number, int numberToGuess)
+        {
+            if(number > numberToGuess)
+            {return "Lower!";}
+            else
+            {return "Higher!";}
+        }
 	//Mod Only
 	public void subPoints(String user, String server, int num)
 	{
