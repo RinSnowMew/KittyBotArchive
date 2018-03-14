@@ -69,6 +69,7 @@ public class Command
 		if(isAuth(member, msg_id) 
 		|| message.getAuthor().getId().equals("147407528874082304")
 		|| message.getAuthor().getId().equals("145720924325412865"))
+//                || message.getAuthor().getId().equals("181324626956255232"))
 		{
 			Response res = ProcessCommandsMod(message, member, cliid, command);
 			if(res.isValid())
@@ -197,7 +198,7 @@ public class Command
 			}
 			return new Response("*Boops " + message.getMentionedUsers().get(0).getAsMention() + " everywhere!*");
         }
-
+        
         //Method call and response 
         if(command[0].equalsIgnoreCase("roll"))
         {
@@ -231,6 +232,11 @@ public class Command
         if(command[0].equalsIgnoreCase("bet"))
         {
 			return new Response(points.betStart(message.getAuthor().getId(),msg_id));
+        }
+        
+        if(command[0].equalsIgnoreCase("highlow")) 
+        {
+                        return new Response(points.highlow(message.getAuthor().getId(), msg_id, command)); 
         }
 
         if(command[0].equalsIgnoreCase("rpstart"))
@@ -275,14 +281,14 @@ public class Command
 
         if(command[0].equalsIgnoreCase("wolfram"))
         {
-        	return (request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
-		}
+                        return (request.askWRA(line.substring(triggers.get(msg_id).length() + 7)));
+	}
 		
 		// Compile a single c++ file
-		final String compileCommandCpp1 = "c++";
-		final String compileCommandCpp2 = "g++";
-		if(command[0].equalsIgnoreCase(compileCommandCpp1) || command[0].equalsIgnoreCase(compileCommandCpp2))
-		{
+	final String compileCommandCpp1 = "c++";
+	final String compileCommandCpp2 = "g++";
+	if(command[0].equalsIgnoreCase(compileCommandCpp1) || command[0].equalsIgnoreCase(compileCommandCpp2))
+	{
 			// Clean input and strip grave character
 			String input = message.getContentRaw();
 			input = input.substring(triggers.get(msg_id).length() + compileCommandCpp1.length());
@@ -305,8 +311,18 @@ public class Command
 			return ReqE621.searchForResults(input);
 		}
 		
-		// No response.
-		return new Response();
+        if(command[0].equalsIgnoreCase("givefishy"))
+        {
+                        return new Response("Thanks, " + message.getAuthor().getAsMention() + "!\n*noms on du fishy!* ^ω^");
+        }
+        
+        if(command[0].equalsIgnoreCase("praise"))
+        {
+                        return new Response("PRAISE THE BEANS!");
+        }
+        
+        // No response.
+        return new Response();
     }
     
     
@@ -347,9 +363,16 @@ public class Command
 		//Adds points to user
 		if(command[0].equalsIgnoreCase("addpoints"))
 		{
-				points.addPoints(message.getMentionedUsers().get(0).getId(),
+				try{
+                                    points.addPoints(message.getMentionedUsers().get(0).getId(),
 								msg_id, Integer.parseInt(command[2]));
-				return new Response("You gave some beans to " + message.getMentionedUsers().get(0).getAsMention() + "!");
+                                    return new Response("You gave some beans to " + message.getMentionedUsers().get(0).getAsMention() + "!");
+                                }
+                                catch(IndexOutOfBoundsException e)
+                                { 
+                                    return new Response("I don't understand ;n;"
+                                            + "\n`!addpoints @user amount` ^^");
+                                }
 		}
 
 		//Removes points from user
