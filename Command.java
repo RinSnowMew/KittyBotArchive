@@ -490,7 +490,8 @@ public class Command
 		{
 			return new Response(polls.addChoice(msg_id, message.getContentRaw().substring(11)));
 		}
-
+		
+		// E621 Config commands
 		if(command[0].equalsIgnoreCase("E621Limit"))
 		{
 			// Create and parse int.
@@ -506,6 +507,8 @@ public class Command
 
 			return ReqE621.SetMaxSearchResults(new_limit);
 		}
+		
+		// Return default
         return new Response();
     }
 	

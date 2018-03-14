@@ -23,7 +23,8 @@ public class ReqE621
 	  ///////////////////////////////////////
 	 // Internal JSON class and variables //
 	//////////////////////////////////.////
-	private final static Gson jsonParser_ = new Gson();
+	private static final Gson jsonParser_ = new Gson();
+	private static final String API_ROOT = "https://e621.net/post/index.json";
 	private static int maxSearchResults_ = 1;
 	private class E621ResponseObject
 	{
@@ -49,9 +50,11 @@ public class ReqE621
 		input = input.replace("+", "%2B");
 		input = input.replace(" ", "%20");
 		
-		// Configure and send request
-		Response res = HTTPUtils.SendPOSTRequest("https://e621.net/post/index.json"
-			, "tags=" + input + "&limit=" + maxSearchResults_ + "&rating=safe");
+		// Configure and send request. Note: Random ordering added as first
+		// tag by default. User-provided tags, therefore, will override it. 
+		// If order:score is provided, that will be honored over order:random.
+		Response res = HTTPUtils.SendPOSTRequest(API_ROOT
+			, "tags=order:random%20" + input + "&limit=" + maxSearchResults_);
 		
 		// Confirm the request is valid. Other cases checking for EC_E621 error codes
 		// as defined in Response.java may be good.
@@ -64,7 +67,17 @@ public class ReqE621
 			// Append them all separately to a response string w/ some flavor text.
 			String output = "I headed over to e621, and here's what I found!\n";
 			for(int i = 0; i < obj.length; ++i)
-				output += "• " + obj[i].file_url + " \n  source: <" + obj[i].source + ">\n";
+			{
+				// We will always have a file URL. That's a given.
+				output += "• " + obj[i].file_url + " \n  source: ";
+				
+				// Source is not always a given - sometimes null. If it is null,
+				// we will say we could not find it.
+				if(obj[i].source != null)
+					output += "<" + obj[i].source + ">\n";
+				else
+					output += "There wasn't one :c\n";
+			}
 			
 			// Set the response information.
 			res.setContent(output);
