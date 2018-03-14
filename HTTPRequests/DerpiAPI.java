@@ -1,4 +1,4 @@
-package main.java.net.dv8tion;
+package main.java.net.dv8tion.HTTPRequests;
 
 public class DerpiAPI
 {

@@ -1,9 +1,10 @@
-package main.java.net.dv8tion;
+package main.java.net.dv8tion.HTTPRequests;
 
 import main.java.net.dv8tion.HTTPRequests.HTTPUtils;
 import com.google.gson.Gson;
+import main.java.net.dv8tion.Response;
 
-public class DerpiReq 
+public class ReqDerpi 
 {
 //	Response answer = new Response(); 
 	private final String mainURL = "https://derpibooru.org/search.json?q=";
