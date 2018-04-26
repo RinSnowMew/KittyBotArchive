@@ -1,14 +1,16 @@
 package main.java.net.dv8tion;
 
-import main.java.net.dv8tion.HTTPRequests.ReqColiru;
-import main.java.net.dv8tion.HTTPRequests.ReqWolfram;
-import main.java.net.dv8tion.HTTPRequests.ReqE621;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import HTTPRequests.ReqColiru;
+import HTTPRequests.ReqDerpi;
+import HTTPRequests.ReqE621;
+import HTTPRequests.ReqJDoodle;
+import HTTPRequests.ReqWolfram;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -26,14 +28,24 @@ public class Command
 	Blacklist words = new Blacklist();
 	PollManager polls = new PollManager();
 	ReqWolfram request = new ReqWolfram(); 
+	ReqDerpi derpsearch = new ReqDerpi();
+	ReqJDoodle doodleSearch = new ReqJDoodle();
 	
 	
 	// Called from the overridden function to encourage cleaner command 
 	// parsing. Returns a string which is the message sent back to users.
 	public String comSent(Message message, Member member, String cliid)
-	{
+	{		
 		final String line = CleanLine(message.getContentRaw());
         final String msg_id = message.getGuild().getId();
+        
+        // Language filter
+	     if(words.check(line) && listed.contains(msg_id))
+	     {
+	     	message.delete().queue();
+	     	
+	     	return "Message deleted for inappropiate language.";
+	     }
         
 		// Do any upkeep that should happen before we get to the commands.
 		{
@@ -113,15 +125,7 @@ public class Command
 	// Note that there is no command array argument for this function.
 	Response ProcessPreCommand(Message message, Member member, String cliid)
 	{
-		final String line = CleanLine(message.getContentRaw());
         final String msg_id = message.getGuild().getId();
-              
-		// Language filter
-		if(words.check(line) && listed.contains(msg_id))
-		{
-			message.delete().queue();
-			return new Response("Message deleted for inappropiate language.");
-		}
 		
 		// If not ignored, we should add to the bean tracker!
 		if(!isIgnore(member, msg_id))
@@ -311,14 +315,31 @@ public class Command
 			return ReqE621.searchForResults(input);
 		}
 		
+		final String searchJdoodleCommand = "jdoodle";
+		if(command[0].equalsIgnoreCase(searchJdoodleCommand))
+		{
+			String input = message.getContentRaw();
+			input = input.substring(triggers.get(msg_id).length() + searchJdoodleCommand.length());
+			return doodleSearch.getJDoodle(input);
+		}
+		
         if(command[0].equalsIgnoreCase("givefishy"))
         {
-                        return new Response("Thanks, " + message.getAuthor().getAsMention() + "!\n*noms on du fishy!* ^ω^");
+                        return new Response("Thanks, " + message.getAuthor().getAsMention() + 
+                        		"!\n*noms on da fishy!* ^~^");
         }
         
         if(command[0].equalsIgnoreCase("praise"))
         {
                         return new Response("PRAISE THE BEANS!");
+        }
+        
+        final String searchDerpiCommand = "derp";
+        if(command[0].equalsIgnoreCase("derp"))
+        {
+        	String input = message.getContentRaw();
+			input = input.substring(triggers.get(msg_id).length() + searchDerpiCommand.length());
+			return derpsearch.getDerpi(input);
         }
         
         // No response.
@@ -331,7 +352,6 @@ public class Command
     {
         //final String line = CleanLine(message.getContentRaw());
         final String msg_id = message.getGuild().getId();
-
 
 		//Opts in and out of Blacklist
 		if(command[0].equalsIgnoreCase("stopList"))
@@ -364,15 +384,15 @@ public class Command
 		if(command[0].equalsIgnoreCase("addpoints"))
 		{
 				try{
-                                    points.addPoints(message.getMentionedUsers().get(0).getId(),
-								msg_id, Integer.parseInt(command[2]));
-                                    return new Response("You gave some beans to " + message.getMentionedUsers().get(0).getAsMention() + "!");
-                                }
-                                catch(IndexOutOfBoundsException e)
-                                { 
-                                    return new Response("I don't understand ;n;"
-                                            + "\n`!addpoints @user amount` ^^");
-                                }
+                points.addPoints(message.getMentionedUsers().get(0).getId(),
+				msg_id, Integer.parseInt(command[2]));
+                return new Response("You gave some beans to " + message.getMentionedUsers().get(0).getAsMention() + "!");
+                }
+                catch(IndexOutOfBoundsException e)
+                { 
+                	return new Response("I don't understand ;n;"
+                    + "\n`!addpoints @user amount`");
+                }
 		}
 
 		//Removes points from user

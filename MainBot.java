@@ -1,5 +1,6 @@
 package main.java.net.dv8tion;
 
+
 import javax.security.auth.login.LoginException;
 
 import net.dv8tion.jda.core.AccountType;
@@ -14,12 +15,13 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 public class MainBot extends ListenerAdapter 
 {
 	public static JDA epi;
+	
 	static Command command = new Command(); 
 		
 	public static void main (String [] args) 
 			throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException
 	{
-			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
+			epi = new JDABuilder(AccountType.BOT).setToken(Ref.Token).buildBlocking();
 			epi.getPresence().setGame(Game.playing("with an outlet"));
 			epi.addEventListener(new MainBot());
 			command.makeTriggers(epi.getGuilds()); 
@@ -29,10 +31,11 @@ public class MainBot extends ListenerAdapter
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 	{
 		//Ignores herself
-		if(event.getAuthor().getName().equals("KittyBot") || event.getMessage().getContentRaw().length() < 1)
+		if(event.getAuthor().getName().equals("KittyBot") 
+				|| event.getMessage().getContentRaw().length() < 1)
 			return;
 		
-		String message = command.comSent(event.getMessage(), event.getMember(), Ref.TestCliID);
+		String message = command.comSent(event.getMessage(), event.getMember(), Ref.CliID);
 		if(!message.equals(""))
 		{
 			event.getChannel().sendMessage(message).queue();
@@ -41,7 +44,8 @@ public class MainBot extends ListenerAdapter
 
 	/*
 	 * (non-Javadoc)
-	 * @see net.dv8tion.jda.core.hooks.ListenerAdapter#onPrivateMessageReceived(net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent)
+	 * @see net.dv8tion.jda.core.hooks.ListenerAdapter
+	 * #onPrivateMessageReceived(net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent)
 	 */
 	@Override
 	public void onPrivateMessageReceived(PrivateMessageReceivedEvent event)

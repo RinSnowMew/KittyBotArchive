@@ -1,4 +1,4 @@
-package main.java.net.dv8tion.HTTPRequests;
+package HTTPRequests;
 
 import main.java.net.dv8tion.Ref;
 import main.java.net.dv8tion.Response;

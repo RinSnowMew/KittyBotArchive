@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.java.net.dv8tion.HTTPRequests;
+package HTTPRequests;
 import com.google.gson.Gson;
+
+//import main.java.net.dv8tion.Ref;
 import main.java.net.dv8tion.Response;
 
 /**
@@ -17,6 +19,7 @@ import main.java.net.dv8tion.Response;
  * java one.
  * 
  * @author Wisp
+ * Edited by Rin
  */
 public class ReqE621 
 {   
@@ -24,17 +27,17 @@ public class ReqE621
 	 // Internal JSON class and variables //
 	//////////////////////////////////.////
 	private static final Gson jsonParser_ = new Gson();
-	private static final String API_ROOT = "https://e621.net/post/index.json";
-	private static int maxSearchResults_ = 1;
+	private static final String API_ROOT = "https://e621.net/post/index.json?";
+	private static int maxSearchResults_ = 10;
+	private static String[] blacklist = {"theallseeingeye","scat","diaper","cub"};
 	private class E621ResponseObject
 	{
 		// public varaibles matching the case and the type we want for JSON.
 		// There are many more fields, but if we don't provide some it just
 		// doesn't bother parsing them.
-		public int id;
-		public String tags;
 		public String file_url;
 		public String source;
+		public String tags; 
 	}
 
 	
@@ -45,6 +48,7 @@ public class ReqE621
 	// Requests a specific image, then returns a few.
 	public static Response searchForResults(String input)
 	{
+		boolean blacklisted;
 		// Clean up request and replace problematic characters for the query string.
 		input = input.trim();
 		input = input.replace("+", "%2B");
@@ -55,6 +59,8 @@ public class ReqE621
 		// If order:score is provided, that will be honored over order:random.
 		Response res = HTTPUtils.SendPOSTRequest(API_ROOT
 			, "tags=order:random%20" + input + "&limit=" + maxSearchResults_);
+//			+ "&login="+ Ref.e621APIUser + "&password_hash=" + Ref.e621APISecret
+//		System.out.println(API_ROOT + "tags=order:random%20" + input + "&limit=" + maxSearchResults_);
 		
 		// Confirm the request is valid. Other cases checking for EC_E621 error codes
 		// as defined in Response.java may be good.
@@ -66,17 +72,39 @@ public class ReqE621
 			// For now, we really just wanna display images and their source. 
 			// Append them all separately to a response string w/ some flavor text.
 			String output = "I headed over to e621, and here's what I found!\n";
-			for(int i = 0; i < obj.length; ++i)
+			if(obj.length < 1)
 			{
-				// We will always have a file URL. That's a given.
-				output += "• " + obj[i].file_url + " \n  source: ";
-				
-				// Source is not always a given - sometimes null. If it is null,
-				// we will say we could not find it.
-				if(obj[i].source != null)
-					output += "<" + obj[i].source + ">\n";
-				else
-					output += "There wasn't one :c\n";
+				output = "There weren't any images! D:";
+			}
+			else
+			{
+				for(int i = 0; i < obj.length; ++i)
+				{
+					blacklisted = false;
+					for(int j = 0; j < blacklist.length; j++)
+					{
+						if(obj[i].tags.contains(blacklist[j]))
+						{
+							blacklisted = true;
+						}
+					}
+					
+					if(blacklisted)
+					{
+						continue;
+					}
+					// We will always have a file URL. That's a given.
+					output += "- " + obj[i].file_url + " \n  source: ";
+					
+					// Source is not always a given - sometimes null. If it is null,
+					// we will say we could not find it.
+					if(obj[i].source != null)
+						output += "<" + obj[i].source + ">\n";
+					else
+						output += "There wasn't one :c\n";
+					res.setContent(output);
+					return res;
+				}
 			}
 			
 			// Set the response information.
@@ -89,7 +117,7 @@ public class ReqE621
 		return new Response("I had some trouble searching e621 for that ^^;");
 	}
 	
-	// Safely sets the maximum number of searches to something erasonable
+	// Safely sets the maximum number of searches to something reasonable
 	public static Response SetMaxSearchResults(int num_results) 
 	{
 		Response res = new Response("I set the e621 image response limit to " + num_results + "!");
