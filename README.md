@@ -10,7 +10,7 @@ The highest tier of command is a developer command. Each tier can do everything 
 
 ##### Mod Commands
 - `stopList`: Disables the blacklist feature.
-- `startList`: Enables the blacklist feature which trims messages containing inapporpraite words.
+- `startList`: Enables the blacklist feature which trims messages containing inappropriate words.
 - `mute`: Mutes kittybot.
 - `unmute`: Unmutes kittybot.
 - `addpoints <@user> <number>`: Adds points.
@@ -30,8 +30,8 @@ The highest tier of command is a developer command. Each tier can do everything 
 - `E621Limit <#>`: Sets the maximum number of images that are grabbed when searching E621. By default, `1`.
 
 ##### General Commands
-- `help`: Shows general help information about kittybot, displays the patreon 
-- `info`: Developer info for kittybot
+- `help`: Shows general help information about kittybot and a small set of the commands.
+- `info`: Developer info for kittybot.
 - `boop <@user 1 ... @user n>`: Serves as a ping command of sorts! Also boops all `@users` specified in the command line.
 - `roll <number of dice>d<dice sides>`: Rolls n s-sided dice in `n`d`s` format. Limit of 100 dice, and 100 sides.
 - `choose <option 1, ..., option n>`: Kittybot will randomly choose an entry in a comma-separated list of choices.
@@ -44,7 +44,7 @@ The highest tier of command is a developer command. Each tier can do everything 
 - `getPoll`: Gets the current poll and displays the options.
 - `getResults`: Gets the current results of the current poll, but doesn't end the poll.
 - `wolfram <query>`: Asks wolfram about the specified query, and posts the short response.
-- `<c++ | g++> <code>`: Compiles specified C/C++ code with gcc (Coliru) compiler. Either c++ or g++ are both valid compilation commands for a snippet of code that follows. If `c` or `C` are specified as the syntax highlited colors, they are ignored. Code snippet denoting characters are ignored.
+- `<c++ | g++> <code>`: Compiles specified C/C++ code with gcc (Coliru) compiler. Either c++ or g++ are both valid compilation commands for a snippet of code that follows. If `c` or `C` are specified as the syntax highlighted colors, they are ignored. Code snippet denoting characters are ignored.
 - `jdoodle <code>`: Compiles specified Java with java 1.8+ (JDoodle) compiler. Highlighting and code snippet characters may not be ignored.
 - `e621 <tag1 ... tagN>`: Searches E621 with the specified tags and posts a random number of pictures, default `1`, specified by `E621Limit`.
 - `derp`: Searches derpibooru using the specified search parameters. Provides `1` random image result.
