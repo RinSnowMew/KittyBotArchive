@@ -46,7 +46,7 @@ The highest tier of command is a developer command. Each tier can do everything 
 - `wolfram <query>`: Asks wolfram about the specified query, and posts the short response.
 - `<c++ | g++> <code>`: Compiles specified C/C++ code with gcc (Coliru) compiler. Either c++ or g++ are both valid compilation commands for a snippet of code that follows. If `c` or `C` are specified as the syntax highlighted colors, they are ignored. Code snippet denoting characters are ignored.
 - `jdoodle <code>`: Compiles specified Java with java 1.8+ (JDoodle) compiler. Highlighting and code snippet characters may not be ignored.
-- `e621 <tag1 ... tagN>`: Searches E621 with the specified tags and posts a random number of pictures, default `1`, specified by `E621Limit`.
-- `derp`: Searches derpibooru using the specified search parameters. Provides `1` random image result.
+- `e621 <query>`: Searches E621 using the provided query. Provides, by default, `1` random image result.
+- `derp <query>`: Searches derpibooru using the provided query. Provides `1` random image result.
 - `givefishy`: Ping command in which Kittybot thanks the user for providing kittybot with a fishy.
 - `praise`: Ping command in which Kittybot praises the concept of beans.
