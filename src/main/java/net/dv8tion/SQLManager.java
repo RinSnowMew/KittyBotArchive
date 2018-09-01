@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import offline.Ref;
 
 public class SQLManager 
 {
@@ -11,10 +12,9 @@ public class SQLManager
 	
 	public SQLManager()
 	{
-		
 	    try {
 	        conn =
-	           DriverManager.getConnection("jdbc:mysql://localhost/kittybot", "kittysql", "purple sql");
+	           DriverManager.getConnection(Ref.SQLURL, Ref.SQLDatabase, Ref.SQLPassword);
 
 	        // Do something with the Connection
 	        System.out.println("Connected to Database");
@@ -27,7 +27,7 @@ public class SQLManager
 	    }
 	}
 	
-	public boolean serverJoin(String serverID)
+	public void serverJoin(String serverID)
 	{
 		java.sql.Statement stat = null;
 		String query = "SHOW TABLES LIKE '%" 
@@ -37,7 +37,6 @@ public class SQLManager
 			ResultSet rs = stat.executeQuery(query);
 			if(!rs.next())
 			{
-				System.out.print("RUNNING QUERY");
 				query = "CREATE TABLE `kittybot`.`BASE_" + serverID + "` ("
 						+ "  `USERID` VARCHAR(20) NOT NULL,"
 						+ "  `POINTS` INT NULL,"
@@ -50,7 +49,22 @@ public class SQLManager
 			
 			e.printStackTrace();
 		}
-		return false;
+	}
+	
+	public void populateList(String [] IDs, String serverID) throws SQLException 
+	{
+		String query = "INSERT INTO BASE_" + serverID + 
+				" (USERID, POINTS, AUTH, IGNORED) " +
+				"VALUES (" + IDs[0] + ", 0, 0, 0)";
+		
+		for(int i = 1; i < IDs.length; i ++) 
+		{
+			query += ",("+IDs[i] + ", 0, 0, 0)";
+		}
+		query += ";";
+		java.sql.Statement stat = conn.createStatement();
+		stat.execute(query);
+		System.out.println(query);
 	}
 	
 	public Response closeDatabase() throws SQLException

@@ -2,16 +2,16 @@ package main.java.net.dv8tion;
 
 
 import javax.security.auth.login.LoginException;
-import offline.Ref;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-
+import offline.Ref;
 
 
 public class MainBot extends ListenerAdapter 
@@ -23,7 +23,7 @@ public class MainBot extends ListenerAdapter
 	public static void main (String [] args) 
 			throws LoginException, IllegalArgumentException, InterruptedException
 	{
-			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
+			epi = new JDABuilder(AccountType.BOT).setToken(Ref.Token).buildBlocking();
 			epi.getPresence().setGame(Game.playing("with an outlet"));
 			epi.addEventListener(new MainBot());
 			command.makeTriggers(epi.getGuilds()); 
@@ -37,7 +37,7 @@ public class MainBot extends ListenerAdapter
 				|| event.getMessage().getContentRaw().length() < 1)
 			return;
 		
-		String message = command.comSent(event.getMessage(), event.getMember(), Ref.TestCliID);
+		String message = command.comSent(event.getMessage(), event.getMember(), Ref.CliID);
 		if(!message.equals(""))
 		{
 			event.getChannel().sendMessage(message).queue();
@@ -47,8 +47,13 @@ public class MainBot extends ListenerAdapter
 	@Override 
 	public void onGuildJoin(GuildJoinEvent event)
 	{
-		command.serverJoin(event.getGuild().getId());
-		System.out.println("WE GOT HERE AT LEAST");
+		command.serverJoin(event.getGuild().getId(), event.getGuild().getMembers());
+	}
+	
+	@Override
+	public void onGuildMemberJoin(GuildMemberJoinEvent event) 
+	{
+		command.userJoin(event.getUser().getId());
 	}
 
 	/*
