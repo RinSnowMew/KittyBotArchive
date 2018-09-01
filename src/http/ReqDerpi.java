@@ -2,7 +2,7 @@ package http;
 
 import com.google.gson.Gson;
 
-import Ref;
+import offline.Ref;
 import main.java.net.dv8tion.Response;
 
 public class ReqDerpi

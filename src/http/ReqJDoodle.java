@@ -15,7 +15,7 @@ import java.net.URL;
 
 import com.google.gson.Gson;
 
-import main.java.net.dv8tion.Ref;
+import offline.Ref;
 import main.java.net.dv8tion.Response;
 
 /**
