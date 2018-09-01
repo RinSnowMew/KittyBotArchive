@@ -1,7 +1,8 @@
-package HTTPRequests;
+package http;
+
 import com.google.gson.Gson;
 
-import main.java.net.dv8tion.Ref;
+import Ref;
 import main.java.net.dv8tion.Response;
 
 public class ReqDerpi

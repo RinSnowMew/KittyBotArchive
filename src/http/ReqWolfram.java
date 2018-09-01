@@ -1,6 +1,6 @@
-package HTTPRequests;
+package http;
 
-import main.java.net.dv8tion.Ref;
+import Ref;
 import main.java.net.dv8tion.Response;
 
 public class ReqWolfram 
@@ -16,7 +16,7 @@ public class ReqWolfram
 		// Configure and send request
 		Response answer = HTTPUtils.SendPOSTRequest("https://api.wolframalpha.com/v1/result","appid=" + Ref.wolfRamID + "&i=" + input);
 		
-		// Trim content and see if no answer was availables, or see if we got a
+		// Trim content and see if no answer was available, or see if we got a
 		// not-implemented error, which is what wolfram likes to hand back
 		if(answer.getContent().trim().equalsIgnoreCase("No short answer available")
 	    || answer.getErrorCode() == Response.EC_HTTP_501_NOT_IMPLEMENTED)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Project1</name>
-	<comment></comment>
+	<name>KittyBot</name>
+	<comment>Discord Bot</comment>
 	<projects>
 	</projects>
 	<buildSpec>

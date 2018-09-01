@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import HTTPRequests.ReqColiru;
-import HTTPRequests.ReqDerpi;
-import HTTPRequests.ReqE621;
-import HTTPRequests.ReqJDoodle;
-import HTTPRequests.ReqWolfram;
+import http.ReqColiru;
+import http.ReqDerpi;
+import http.ReqE621;
+import http.ReqJDoodle;
+import http.ReqWolfram;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;

@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package HTTPRequests;
-import com.google.gson.Gson;
+package http;
 
-//import main.java.net.dv8tion.Ref;
+import com.google.gson.Gson;
 import main.java.net.dv8tion.Response;
 
 /**
