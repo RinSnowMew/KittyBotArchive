@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="lib/httpcore-4.4.9.jar"/>
 	<classpathentry kind="lib" path="lib/JDA-3.5.0_327-withDependencies.jar"/>
 	<classpathentry kind="lib" path="lib/WolframAlpha-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/JDA-3.7.1_385-withDependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
