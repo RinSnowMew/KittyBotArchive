@@ -49,43 +49,43 @@ public class Response
 	
 	
 	
-      ////////////////////////////////////
+	  ////////////////////////////////////
 	 // Public-facing member functions //
 	////////////////////////////////////
-    // Default constructor, which by default creates an invalid response.
-    public Response() 
-    {
-        this.content_ = ""; 
-        this.errorCode_ = EC_INVALID;
+	// Default constructor, which by default creates an invalid response.
+	public Response() 
+	{
+		this.content_ = ""; 
+		this.errorCode_ = EC_INVALID;
 		this.valid_ = false;
-    } 
+	} 
 
 	// Response code constructor: By default, not valid, but does contian
 	// some information and an error code as set by the user.
-    public Response(int error_code) 
-    {
-        this.content_ = ""; 
-        this.errorCode_ = error_code;
+	public Response(int error_code) 
+	{
+		this.content_ = ""; 
+		this.errorCode_ = error_code;
 		this.valid_ = false;
-    } 
+	} 
 	
-    // General Constructor and the closest we can get to a conversion 
-    // constructor in Java. Responses generated with this are valid, and CAN
-    // be empty string.
-    public Response(String message)
-    {
-        this.content_ = message;
-        this.valid_ = true;
+	// General Constructor and the closest we can get to a conversion 
+	// constructor in Java. Responses generated with this are valid, and CAN
+	// be empty string.
+	public Response(String message)
+	{
+		this.content_ = message;
+		this.valid_ = true;
 		this.errorCode_ = EC_NO_ERROR;
-    }
+	}
 	
-    // General getters and setters
+	// General getters and setters
 	// Get...
-	public boolean isValid()         { return valid_; }
-    public String getContent()       { return this.content_; }
-	public int getErrorCode()        { return this.errorCode_; }
+	public boolean isValid()	{ return valid_; }
+	public String getContent()	{ return this.content_; }
+	public int getErrorCode()	{ return this.errorCode_; }
 	
 	// Set...
-	public void setContent(String s) { this.content_ = s; this.valid_ = true; }
-	public void setErrorCode(int c)  { this.errorCode_ = c; }
+	public void setContent(String s)	{ this.content_ = s; this.valid_ = true; }
+	public void setErrorCode(int c)		{ this.errorCode_ = c; }
 }
