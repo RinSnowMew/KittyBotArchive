@@ -2,15 +2,17 @@ package main.java.net.dv8tion;
 
 
 import javax.security.auth.login.LoginException;
-import offline.Ref;
+
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+
+
 
 public class MainBot extends ListenerAdapter 
 {
@@ -19,7 +21,7 @@ public class MainBot extends ListenerAdapter
 	static Command command = new Command(); 
 		
 	public static void main (String [] args) 
-			throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException
+			throws LoginException, IllegalArgumentException, InterruptedException
 	{
 			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
 			epi.getPresence().setGame(Game.playing("with an outlet"));
@@ -40,6 +42,13 @@ public class MainBot extends ListenerAdapter
 		{
 			event.getChannel().sendMessage(message).queue();
 		}	
+	}
+	
+	@Override 
+	public void onGuildJoin(GuildJoinEvent event)
+	{
+		command.serverJoin(event.getGuild().getId());
+		System.out.println("WE GOT HERE AT LEAST");
 	}
 
 	/*

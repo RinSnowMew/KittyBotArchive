@@ -15,6 +15,7 @@ import java.util.Set;
 
 import net.dv8tion.jda.core.entities.Role;
 
+
 public class AuthList 
 {
 	HashMap<String, String> names = new HashMap<String, String>();
@@ -23,21 +24,28 @@ public class AuthList
 	public AuthList()
 	{
 		String [] words;
-		try {
+		try
+		{
 			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("AuthNames.txt")));
-		    String line;
-		    while ((line = br.readLine()) != null) 
-		    {
-		    	words = line.split(" ");
-		    	names.put(words[0],words[1]);
-		    }
+			String line;
+			
+			while ((line = br.readLine()) != null) 
+			{
+				words = line.split(" ");
+				names.put(words[0],words[1]);
+			}
 		    br.close();
-		} catch (FileNotFoundException e) 
+		}
+		catch (FileNotFoundException e)
 		{
 			System.out.println("Authorized names file not found");
-		} catch (NumberFormatException e) {
+		} 
+		catch (NumberFormatException e)
+		{
 			e.printStackTrace();
-		} catch (IOException e) {
+		} 
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 	}
@@ -93,23 +101,27 @@ public class AuthList
 		PrintWriter writer = new PrintWriter("AuthNames.txt", "UTF-8");
 		Set<?> set = names.entrySet(); 
 		Iterator<?> iterator = set.iterator();
+		
 		while(iterator.hasNext()) 
 		{
-	         @SuppressWarnings("rawtypes")
+			@SuppressWarnings("rawtypes")
 			Map.Entry mentry = (Map.Entry)iterator.next();
-	        writer.println(mentry.getKey() + " " + mentry.getValue());
-	    }
+			writer.println(mentry.getKey() + " " + mentry.getValue());
+		}
+		
 		writer.close();
 		
 		writer = new PrintWriter("AuthRoles.txt", "UTF-8");
 		Set<?> set2 = roles.entrySet(); 
 		iterator = set2.iterator();
+		
 		while(iterator.hasNext()) 
 		{
-	         @SuppressWarnings("rawtypes")
+			@SuppressWarnings("rawtypes")
 			Map.Entry mentry = (Map.Entry)iterator.next();
-	        writer.println(mentry.getKey() + " " + mentry.getValue());
-	    }
+			writer.println(mentry.getKey() + " " + mentry.getValue());
+		}
+		
 		writer.close();
 	}
 }
