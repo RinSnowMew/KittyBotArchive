@@ -1,5 +1,5 @@
 # KittyBot
-Kittybot is a discord bot that can handle everything from general searches, post tracking, dice rolling, code compilation, and more!
+Kittybot is a discord bot that can handle everything from general searches, post tracking, dice rolling, code compilation, and more! The repo is configured to use with Eclipse for development.
 
 ## Commands
 The highest tier of command is a developer command. Each tier can do everything below it as well as what's in it.
