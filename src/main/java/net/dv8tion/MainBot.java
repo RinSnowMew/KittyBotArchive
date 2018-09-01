@@ -23,7 +23,7 @@ public class MainBot extends ListenerAdapter
 	public static void main (String [] args) 
 			throws LoginException, IllegalArgumentException, InterruptedException
 	{
-			epi = new JDABuilder(AccountType.BOT).setToken(Ref.Token).buildBlocking();
+			epi = new JDABuilder(AccountType.BOT).setToken(Ref.TestToken).buildBlocking();
 			epi.getPresence().setGame(Game.playing("with an outlet"));
 			epi.addEventListener(new MainBot());
 			command.makeTriggers(epi.getGuilds()); 
@@ -37,7 +37,7 @@ public class MainBot extends ListenerAdapter
 				|| event.getMessage().getContentRaw().length() < 1)
 			return;
 		
-		String message = command.comSent(event.getMessage(), event.getMember(), Ref.CliID);
+		String message = command.comSent(event.getMessage(), event.getMember(), Ref.TestCliID);
 		if(!message.equals(""))
 		{
 			event.getChannel().sendMessage(message).queue();
