@@ -18,9 +18,9 @@ import net.dv8tion.jda.core.entities.Message;
 public class Command 
 {
     // Internal variables
-	ArrayList <String> mute = new ArrayList <>(); 
-	ArrayList <String> listed = new ArrayList <>();
-	HashMap <String, String> triggers = new HashMap<>();
+	ArrayList <String> mute = new ArrayList <String>(); 
+	ArrayList <String> listed = new ArrayList <String>();
+	HashMap <String, String> triggers = new HashMap<String, String>();
 	RPManager manager = new RPManager();
 	PointCounter points = new PointCounter();
 	IgnoreList ignored = new IgnoreList();
